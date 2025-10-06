@@ -20,6 +20,19 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Wedding Map - Our Special Places",
   description: "Share memories at the places that matter to us",
+  manifest: "/manifest.json",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  themeColor: "#7B2D26",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Wedding Map",
+  },
 };
 
 export default function RootLayout({

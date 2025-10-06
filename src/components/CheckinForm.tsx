@@ -7,7 +7,7 @@ import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Meeple } from '@/components/Meeple'
 import { supabase } from '@/lib/supabase'
 
 interface CheckinFormProps {
@@ -38,14 +38,13 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
     fetchPreferences()
   }, [])
 
-  // Create a map of email -> avatar_seed for quick lookup
-  const avatarMap = new Map(
-    userPreferences.map(pref => [pref.email, pref.avatar_seed])
+  // Create a map of email -> meeple_color for quick lookup
+  const meepleColorMap = new Map(
+    userPreferences.map(pref => [pref.email, pref.meeple_color])
   )
 
-  const getAvatarUrl = (email: string) => {
-    const seed = avatarMap.get(email) || email
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`
+  const getMeepleColor = (email: string) => {
+    return meepleColorMap.get(email) || '#7B2D26' // Default to burgundy
   }
 
   const handleSignIn = async () => {
@@ -105,7 +104,7 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
         <CardHeader>
           <CardTitle className="text-green-800">Successfully Checked In!</CardTitle>
           <CardDescription>
-            Your avatar has been placed at {table.address}. Redirecting to the map...
+            Your meeple has been placed at {table.address}. Redirecting to the map...
           </CardDescription>
         </CardHeader>
       </Card>
@@ -154,7 +153,7 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
         <CardHeader>
           <CardTitle>Check In</CardTitle>
           <CardDescription>
-            Leave an optional message and place your avatar at this special location
+            Leave an optional message and place your meeple at this special location
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -181,10 +180,9 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
           )}
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded">
-            <Avatar>
-              <AvatarImage src={getAvatarUrl(session.user.email || '')} />
-              <AvatarFallback>{session.user.name?.[0]}</AvatarFallback>
-            </Avatar>
+            <div className="flex-shrink-0">
+              <Meeple color={getMeepleColor(session.user.email || '')} size={40} />
+            </div>
             <div>
               <p className="font-medium text-sm">{session.user.name}</p>
               <p className="text-xs text-gray-600">{session.user.email}</p>
@@ -214,10 +212,9 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
             <div className="space-y-3">
               {existingCheckins.slice(0, 5).map((checkin) => (
                 <div key={checkin.id} className="flex items-start gap-3 p-2 bg-gray-50 rounded">
-                  <Avatar>
-                    <AvatarImage src={getAvatarUrl(checkin.guest_email)} />
-                    <AvatarFallback>{checkin.guest_name[0]}</AvatarFallback>
-                  </Avatar>
+                  <div className="flex-shrink-0">
+                    <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{checkin.guest_name}</p>
                     {checkin.message && (

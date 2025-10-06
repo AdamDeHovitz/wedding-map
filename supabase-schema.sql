@@ -13,10 +13,10 @@ CREATE TABLE wedding_tables (
 );
 
 -- Table: user_preferences
--- Stores user settings (avatar choice, display name, etc.) once per user
+-- Stores user settings (meeple color, display name, etc.) once per user
 CREATE TABLE user_preferences (
   email TEXT PRIMARY KEY, -- User's email from OAuth
-  avatar_seed TEXT NOT NULL, -- Seed for generating consistent avatar
+  meeple_color TEXT NOT NULL, -- Color for the user's meeple (hex code)
   display_name TEXT, -- Optional: let users customize their display name
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

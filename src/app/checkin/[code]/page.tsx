@@ -30,11 +30,11 @@ export default async function CheckinPage({ params }: CheckinPageProps) {
     .order('checked_in_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white p-6">
+    <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white p-4 sm:p-6 pb-safe">
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">{table.name}</h1>
-          <p className="text-lg text-gray-600">{table.address}</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 px-2">{table.name}</h1>
+          <p className="text-base sm:text-lg text-gray-600 px-2">{table.address}</p>
         </div>
 
         <CheckinForm table={table} existingCheckins={checkins || []} />

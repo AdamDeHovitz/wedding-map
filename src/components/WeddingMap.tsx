@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { Map as MapGL, Marker, Popup } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Meeple } from '@/components/Meeple'
 
 interface WeddingMapProps {
   tables: WeddingTable[]
@@ -25,15 +25,14 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
     zoom: 4 // Lower zoom to see multiple locations across US
   })
 
-  // Create a map of email -> avatar_seed for quick lookup
-  const avatarMap = new Map(
-    userPreferences.map(pref => [pref.email, pref.avatar_seed])
+  // Create a map of email -> meeple_color for quick lookup
+  const meepleColorMap = new Map(
+    userPreferences.map(pref => [pref.email, pref.meeple_color])
   )
 
-  // Helper to get avatar URL for a user
-  const getAvatarUrl = (email: string) => {
-    const seed = avatarMap.get(email) || email
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`
+  // Helper to get meeple color for a user
+  const getMeepleColor = (email: string) => {
+    return meepleColorMap.get(email) || '#7B2D26' // Default to burgundy
   }
 
   // Group check-ins by table
@@ -73,12 +72,16 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
   }, [tables])
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen touch-none">
       <MapGL
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        touchZoomRotate={true}
+        touchPitch={false}
+        dragRotate={false}
+        keyboard={false}
       >
         {/* Markers for each table */}
         {tablesWithCheckins.map((table) => (
@@ -92,12 +95,17 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
               setSelectedTable(table)
             }}
           >
-            <div className="relative cursor-pointer">
-              {/* Location pin with guest count */}
-              <div className="bg-rose-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-rose-600 transition-colors border-2 border-white">
-                <span className="font-bold text-sm">{table.checkins.length}</span>
+            <div className="relative cursor-pointer group active:scale-95 transition-transform">
+              {/* Table icon bubble */}
+              <div className="relative w-20 h-20 sm:w-16 sm:h-16 rounded-full overflow-hidden shadow-lg border-4 border-white bg-white group-hover:scale-110 active:scale-105 flex items-center justify-center p-0.5">
+                <img
+                  src={`/table-icons/${table.unique_code}.png`}
+                  alt={table.name}
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-8 border-l-transparent border-r-transparent border-t-rose-500" />
+              {/* Pin pointer */}
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[12px] border-l-transparent border-r-transparent border-t-white" />
             </div>
           </Marker>
         ))}
@@ -128,10 +136,9 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {selectedTable.checkins.map((checkin) => (
                         <div key={checkin.id} className="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={getAvatarUrl(checkin.guest_email)} />
-                            <AvatarFallback>{checkin.guest_name[0]}</AvatarFallback>
-                          </Avatar>
+                          <div className="flex-shrink-0">
+                            <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900">{checkin.guest_name}</p>
                             {checkin.message && (
