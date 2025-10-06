@@ -1,29 +1,43 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Map as MapGL, Marker, Popup } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Meeple } from '@/components/Meeple'
+import { CheckinDialog } from '@/components/CheckinDialog'
+import { Button } from '@/components/ui/button'
 
 interface WeddingMapProps {
   tables: WeddingTable[]
   checkins: GuestCheckin[]
   userPreferences: UserPreferences[]
+  initialTable?: WeddingTable | null
+  showCheckinDialog?: boolean
 }
 
 interface TableWithCheckins extends WeddingTable {
   checkins: GuestCheckin[]
 }
 
-export default function WeddingMap({ tables, checkins, userPreferences }: WeddingMapProps) {
+export default function WeddingMap({
+  tables,
+  checkins,
+  userPreferences,
+  initialTable = null,
+  showCheckinDialog = false
+}: WeddingMapProps) {
   const [selectedTable, setSelectedTable] = useState<TableWithCheckins | null>(null)
   const [selectedMeeple, setSelectedMeeple] = useState<GuestCheckin | null>(null)
+  const [checkinDialogOpen, setCheckinDialogOpen] = useState(showCheckinDialog)
+  const [checkinTable, setCheckinTable] = useState<WeddingTable | null>(initialTable)
+  const [newMeepleIds, setNewMeepleIds] = useState<Set<string>>(new Set())
+  const previousCheckinIds = useRef<Set<string>>(new Set())
   const [viewState, setViewState] = useState({
-    longitude: -74.0, // Default to NYC area (most locations)
-    latitude: 40.7,
-    zoom: 4 // Lower zoom to see multiple locations across US
+    longitude: initialTable ? Number(initialTable.longitude) : -74.0,
+    latitude: initialTable ? Number(initialTable.latitude) : 40.7,
+    zoom: initialTable ? 15 : 4 // Zoom in if showing initial table
   })
 
   // Threshold for switching between table icons and individual meeples
@@ -71,9 +85,9 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
     checkins: checkins.filter(c => c.table_id === table.id)
   }))
 
-  // Calculate center point and zoom to fit all tables
+  // Calculate center point and zoom to fit all tables (only if no initial table)
   useEffect(() => {
-    if (tables.length > 0) {
+    if (tables.length > 0 && !initialTable) {
       const lats = tables.map(t => Number(t.latitude))
       const lons = tables.map(t => Number(t.longitude))
 
@@ -99,7 +113,33 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
         zoom: zoom,
       })
     }
-  }, [tables])
+  }, [tables, initialTable])
+
+  // Track new check-ins for animation
+  useEffect(() => {
+    const currentCheckinIds = new Set(checkins.map(c => c.id))
+    const previousIds = previousCheckinIds.current
+
+    // Find check-ins that weren't in the previous render
+    const newIds = new Set<string>()
+    currentCheckinIds.forEach(id => {
+      if (!previousIds.has(id)) {
+        newIds.add(id)
+      }
+    })
+
+    if (newIds.size > 0) {
+      setNewMeepleIds(newIds)
+
+      // Remove the "new" status after animation completes
+      setTimeout(() => {
+        setNewMeepleIds(new Set())
+      }, 600) // Match animation duration
+    }
+
+    // Update the ref with current IDs for next render
+    previousCheckinIds.current = currentCheckinIds
+  }, [checkins])
 
   return (
     <div className="w-full h-screen touch-none">
@@ -161,7 +201,7 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
                   setSelectedMeeple(checkin)
                 }}
               >
-                <div className="cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 animate-fadeIn">
+                <div className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'}`}>
                   <Meeple
                     color={getMeepleColor(checkin.guest_email)}
                     size={40}
@@ -190,10 +230,22 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
                 <p className="text-sm text-gray-600">{selectedTable.address}</p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-gray-700">
-                    {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} visited
-                  </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-700">
+                      {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} visited
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setCheckinTable(selectedTable)
+                        setCheckinDialogOpen(true)
+                        setSelectedTable(null)
+                      }}
+                    >
+                      Check In
+                    </Button>
+                  </div>
 
                   {selectedTable.checkins.length > 0 && (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -254,6 +306,13 @@ export default function WeddingMap({ tables, checkins, userPreferences }: Weddin
           </Popup>
         )}
       </MapGL>
+
+      <CheckinDialog
+        open={checkinDialogOpen}
+        onOpenChange={setCheckinDialogOpen}
+        table={checkinTable}
+        requireCode={true}
+      />
     </div>
   )
 }
