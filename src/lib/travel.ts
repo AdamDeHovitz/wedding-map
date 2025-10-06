@@ -98,8 +98,86 @@ async function fetchMapboxRoute(
 }
 
 /**
+ * Fetch transit route from Google Maps Directions API
+ * Returns null if fetch fails
+ */
+async function fetchGoogleTransitRoute(
+  startLat: number,
+  startLon: number,
+  endLat: number,
+  endLon: number
+): Promise<[number, number][] | null> {
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!apiKey) return null
+
+    // Use current time for departure (or could use a fixed time like noon)
+    const departureTime = Math.floor(Date.now() / 1000)
+
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${startLat},${startLon}&destination=${endLat},${endLon}&mode=transit&departure_time=${departureTime}&key=${apiKey}`
+
+    const response = await fetch(url)
+    if (!response.ok) return null
+
+    const data = await response.json()
+    if (data.status !== 'OK' || !data.routes?.[0]) return null
+
+    // Google returns an encoded polyline - we need to decode it
+    const encodedPolyline = data.routes[0].overview_polyline.points
+    return decodePolyline(encodedPolyline)
+  } catch (error) {
+    console.error('Failed to fetch Google transit route:', error)
+    return null
+  }
+}
+
+/**
+ * Decode Google Maps polyline encoding into coordinates
+ * Returns array of [longitude, latitude] pairs (note: Google gives lat,lng but we need lng,lat for Mapbox)
+ */
+function decodePolyline(encoded: string): [number, number][] {
+  const points: [number, number][] = []
+  let index = 0
+  let lat = 0
+  let lng = 0
+
+  while (index < encoded.length) {
+    let b
+    let shift = 0
+    let result = 0
+
+    // Decode latitude
+    do {
+      b = encoded.charCodeAt(index++) - 63
+      result |= (b & 0x1f) << shift
+      shift += 5
+    } while (b >= 0x20)
+    const dlat = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1))
+    lat += dlat
+
+    shift = 0
+    result = 0
+
+    // Decode longitude
+    do {
+      b = encoded.charCodeAt(index++) - 63
+      result |= (b & 0x1f) << shift
+      shift += 5
+    } while (b >= 0x20)
+    const dlng = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1))
+    lng += dlng
+
+    // Convert to degrees and push as [longitude, latitude] for Mapbox
+    points.push([lng / 1e5, lat / 1e5])
+  }
+
+  return points
+}
+
+/**
  * Generate intermediate points along a path for animation
- * For bike/train, fetches real routes from Mapbox
+ * For bike, fetches real routes from Mapbox
+ * For train, fetches real transit routes from Google Maps
  * Returns array of [longitude, latitude] coordinates
  */
 export async function generatePathPoints(
@@ -110,10 +188,19 @@ export async function generatePathPoints(
   mode: TransportMode,
   numPoints: number = 100 // For resampling the route
 ): Promise<[number, number][]> {
-  // For bike and train, try to fetch real route from Mapbox
-  if (mode === 'bike' || mode === 'train') {
-    const profile = mode === 'bike' ? 'cycling' : 'walking' // Use walking for train as approximation
-    const routeCoords = await fetchMapboxRoute(startLon, startLat, endLon, endLat, profile)
+  // For bike, fetch real cycling route from Mapbox
+  if (mode === 'bike') {
+    const routeCoords = await fetchMapboxRoute(startLon, startLat, endLon, endLat, 'cycling')
+
+    if (routeCoords && routeCoords.length > 0) {
+      // Resample the route to get consistent number of points for smooth animation
+      return resamplePath(routeCoords, numPoints)
+    }
+  }
+
+  // For train, fetch real transit route from Google Maps
+  if (mode === 'train') {
+    const routeCoords = await fetchGoogleTransitRoute(startLat, startLon, endLat, endLon)
 
     if (routeCoords && routeCoords.length > 0) {
       // Resample the route to get consistent number of points for smooth animation
