@@ -9,6 +9,8 @@ import {
   getAnimationDuration,
   generatePathPoints,
   getTransportIcon,
+  type PathData,
+  type RouteSegment,
 } from '@/lib/travel'
 
 interface TravelAnimationProps {
@@ -30,7 +32,7 @@ export function TravelAnimation({
 }: TravelAnimationProps) {
   const [currentPosition, setCurrentPosition] = useState({ lat: startLat, lon: startLon })
   const [isAnimating, setIsAnimating] = useState(true)
-  const [pathPoints, setPathPoints] = useState<[number, number][]>([])
+  const [pathData, setPathData] = useState<PathData | null>(null)
   const [isLoadingPath, setIsLoadingPath] = useState(true)
   const startTimeRef = useRef<number>(Date.now())
   const animationFrameRef = useRef<number>()
@@ -41,14 +43,14 @@ export function TravelAnimation({
   const duration = getAnimationDuration(distance, mode)
   const icon = getTransportIcon(mode)
 
-  // Fetch path points asynchronously
+  // Fetch path data asynchronously
   useEffect(() => {
     let isMounted = true
 
     const fetchPath = async () => {
-      const points = await generatePathPoints(startLon, startLat, endLon, endLat, mode)
+      const data = await generatePathPoints(startLon, startLat, endLon, endLat, mode)
       if (isMounted) {
-        setPathPoints(points)
+        setPathData(data)
         setIsLoadingPath(false)
       }
     }
@@ -62,7 +64,7 @@ export function TravelAnimation({
 
   useEffect(() => {
     // Don't start animation until path is loaded
-    if (isLoadingPath || pathPoints.length === 0) return
+    if (isLoadingPath || !pathData || pathData.coordinates.length === 0) return
 
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current
@@ -75,13 +77,13 @@ export function TravelAnimation({
 
       if (progress < 1) {
         // Interpolate between path points for smoother movement
-        const exactIndex = progress * (pathPoints.length - 1)
+        const exactIndex = progress * (pathData.coordinates.length - 1)
         const lowerIndex = Math.floor(exactIndex)
-        const upperIndex = Math.min(lowerIndex + 1, pathPoints.length - 1)
+        const upperIndex = Math.min(lowerIndex + 1, pathData.coordinates.length - 1)
         const t = exactIndex - lowerIndex
 
-        const [lon1, lat1] = pathPoints[lowerIndex]
-        const [lon2, lat2] = pathPoints[upperIndex]
+        const [lon1, lat1] = pathData.coordinates[lowerIndex]
+        const [lon2, lat2] = pathData.coordinates[upperIndex]
 
         const lon = lon1 + (lon2 - lon1) * t
         const lat = lat1 + (lat2 - lat1) * t
@@ -105,51 +107,93 @@ export function TravelAnimation({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [duration, endLat, endLon, onComplete, pathPoints, isLoadingPath])
+  }, [duration, endLat, endLon, onComplete, pathData, isLoadingPath])
 
   // Show loading or nothing if not ready
-  if (!isAnimating || isLoadingPath || pathPoints.length === 0) {
+  if (!isAnimating || isLoadingPath || !pathData || pathData.coordinates.length === 0) {
     return null
   }
 
-  // Create GeoJSON for the route line
-  const routeGeoJSON = {
-    type: 'Feature' as const,
-    properties: {},
-    geometry: {
-      type: 'LineString' as const,
-      coordinates: pathPoints,
-    },
-  }
+  // Get default color based on transport mode (fallback if no segments)
+  const defaultColor = mode === 'bike' ? '#3b82f6' : mode === 'train' ? '#8b5cf6' : '#f59e0b'
 
-  // Get color based on transport mode
-  const routeColor = mode === 'bike' ? '#3b82f6' : mode === 'train' ? '#8b5cf6' : '#f59e0b'
+  // If we have transit segments, render each one with its own color
+  const hasSegments = pathData.segments && pathData.segments.length > 0
 
   return (
     <>
-      {/* Route line */}
-      <Source id="travel-route" type="geojson" data={routeGeoJSON}>
-        <Layer
-          id="travel-route-line"
-          type="line"
-          paint={{
-            'line-color': routeColor,
-            'line-width': 4,
-            'line-opacity': 0.8,
-          }}
-        />
-        {/* Animated dashed line overlay for movement effect */}
-        <Layer
-          id="travel-route-dash"
-          type="line"
-          paint={{
-            'line-color': '#ffffff',
-            'line-width': 2,
-            'line-dasharray': [2, 4],
-            'line-opacity': 0.6,
-          }}
-        />
-      </Source>
+      {/* Route line(s) */}
+      {hasSegments ? (
+        // Render each segment with its own color (transit with subway line colors)
+        pathData.segments!.map((segment, index) => {
+          const segmentGeoJSON = {
+            type: 'Feature' as const,
+            properties: {},
+            geometry: {
+              type: 'LineString' as const,
+              coordinates: segment.coordinates,
+            },
+          }
+
+          return (
+            <Source key={`segment-${index}`} id={`travel-segment-${index}`} type="geojson" data={segmentGeoJSON}>
+              <Layer
+                id={`travel-segment-line-${index}`}
+                type="line"
+                paint={{
+                  'line-color': segment.color,
+                  'line-width': segment.type === 'walking' ? 3 : 5,
+                  'line-opacity': 0.8,
+                  'line-dasharray': segment.type === 'walking' ? [2, 2] : undefined,
+                }}
+              />
+              {/* White overlay for transit lines */}
+              {segment.type === 'transit' && (
+                <Layer
+                  id={`travel-segment-dash-${index}`}
+                  type="line"
+                  paint={{
+                    'line-color': '#ffffff',
+                    'line-width': 2,
+                    'line-dasharray': [4, 6],
+                    'line-opacity': 0.4,
+                  }}
+                />
+              )}
+            </Source>
+          )
+        })
+      ) : (
+        // Fallback: single-color route
+        <Source id="travel-route" type="geojson" data={{
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: pathData.coordinates,
+          },
+        }}>
+          <Layer
+            id="travel-route-line"
+            type="line"
+            paint={{
+              'line-color': defaultColor,
+              'line-width': 4,
+              'line-opacity': 0.8,
+            }}
+          />
+          <Layer
+            id="travel-route-dash"
+            type="line"
+            paint={{
+              'line-color': '#ffffff',
+              'line-width': 2,
+              'line-dasharray': [2, 4],
+              'line-opacity': 0.6,
+            }}
+          />
+        </Source>
+      )}
 
       {/* Traveling meeple marker */}
       <Marker
