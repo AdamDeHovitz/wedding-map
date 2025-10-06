@@ -19,9 +19,14 @@ interface CheckinDialogProps {
   onOpenChange: (open: boolean) => void
   table: WeddingTable | null
   requireCode?: boolean // If false, skip code verification (for QR code flow)
+  onCheckinSuccess?: (data: {
+    checkin: any
+    previousCheckin: any | null
+    meepleColor: string | null
+  }) => void
 }
 
-export function CheckinDialog({ open, onOpenChange, table, requireCode = true }: CheckinDialogProps) {
+export function CheckinDialog({ open, onOpenChange, table, requireCode = true, onCheckinSuccess }: CheckinDialogProps) {
   const router = useRouter()
   const [step, setStep] = useState<'code' | 'message'>(requireCode ? 'code' : 'message')
   const [code, setCode] = useState('')
@@ -67,9 +72,26 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true }:
         throw new Error(data.error || 'Failed to check in')
       }
 
-      // Success! Close dialog and refresh
+      // Success! Trigger animation if callback provided
+      if (onCheckinSuccess) {
+        onCheckinSuccess({
+          checkin: data.checkin,
+          previousCheckin: data.previousCheckin,
+          meepleColor: data.meepleColor,
+        })
+      }
+
+      // Close dialog
       onOpenChange(false)
-      router.refresh()
+
+      // Delay refresh to allow animation to play
+      // If there's travel animation, wait longer
+      const hasTravel = data.previousCheckin && data.previousCheckin.wedding_tables
+      const delay = hasTravel ? 8000 : 1000 // 8 seconds for travel, 1 second for drop
+
+      setTimeout(() => {
+        router.refresh()
+      }, delay)
 
       // Reset state
       setMessage('')

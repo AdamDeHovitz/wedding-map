@@ -7,6 +7,7 @@ import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Meeple } from '@/components/Meeple'
 import { CheckinDialog } from '@/components/CheckinDialog'
+import { TravelAnimation } from '@/components/TravelAnimation'
 import { Button } from '@/components/ui/button'
 
 interface WeddingMapProps {
@@ -34,6 +35,14 @@ export default function WeddingMap({
   const [checkinTable, setCheckinTable] = useState<WeddingTable | null>(initialTable)
   const [newMeepleIds, setNewMeepleIds] = useState<Set<string>>(new Set())
   const previousCheckinIds = useRef<Set<string>>(new Set())
+  const [travelAnimation, setTravelAnimation] = useState<{
+    startLat: number
+    startLon: number
+    endLat: number
+    endLon: number
+    meepleColor: string
+    newCheckinId: string
+  } | null>(null)
   const [viewState, setViewState] = useState({
     longitude: initialTable ? Number(initialTable.longitude) : -74.0,
     latitude: initialTable ? Number(initialTable.latitude) : 40.7,
@@ -85,9 +94,111 @@ export default function WeddingMap({
     checkins: checkins.filter(c => c.table_id === table.id)
   }))
 
-  // Calculate center point and zoom to fit all tables (only if no initial table)
+  // Handle successful check-in with animation
+  const handleCheckinSuccess = (data: {
+    checkin: any
+    previousCheckin: any | null
+    meepleColor: string | null
+  }) => {
+    // If there's a previous check-in, show travel animation
+    if (data.previousCheckin && data.previousCheckin.wedding_tables) {
+      const prevTable = data.previousCheckin.wedding_tables
+      const newTable = data.checkin.wedding_tables
+
+      const startLat = Number(prevTable.latitude)
+      const startLon = Number(prevTable.longitude)
+      const endLat = Number(newTable.latitude)
+      const endLon = Number(newTable.longitude)
+
+      // Calculate bounds to show both locations
+      const minLat = Math.min(startLat, endLat)
+      const maxLat = Math.max(startLat, endLat)
+      const minLon = Math.min(startLon, endLon)
+      const maxLon = Math.max(startLon, endLon)
+
+      // Calculate center
+      const centerLat = (minLat + maxLat) / 2
+      const centerLon = (minLon + maxLon) / 2
+
+      // Calculate zoom level to fit both points with padding
+      const latDiff = maxLat - minLat
+      const lonDiff = maxLon - minLon
+
+      // Use logarithmic scaling for better zoom levels across different distances
+      // This ensures both points are visible with some padding
+      const maxDiff = Math.max(latDiff, lonDiff)
+
+      // Add 30% padding to the bounds
+      const paddedDiff = maxDiff * 1.3
+
+      // Calculate zoom level based on the padded difference
+      // More granular thresholds for better visibility at all distance scales
+      // 1 degree ≈ 111 km at equator
+      let zoom
+      if (paddedDiff < 0.001) zoom = 16      // Block level (< 110 meters)
+      else if (paddedDiff < 0.003) zoom = 15  // Few blocks (< 330 meters)
+      else if (paddedDiff < 0.008) zoom = 14  // Neighborhood (< 880 meters)
+      else if (paddedDiff < 0.02) zoom = 13   // District (< 2.2 km)
+      else if (paddedDiff < 0.05) zoom = 12   // City district (< 5.5 km)
+      else if (paddedDiff < 0.15) zoom = 11   // City (< 16 km)
+      else if (paddedDiff < 0.5) zoom = 9     // Metro area
+      else if (paddedDiff < 2) zoom = 7       // Region
+      else if (paddedDiff < 5) zoom = 6       // State/Province
+      else if (paddedDiff < 15) zoom = 5      // Multiple states
+      else if (paddedDiff < 40) zoom = 4      // Country
+      else if (paddedDiff < 90) zoom = 3      // Continent
+      else zoom = 2                           // Cross-continental
+
+      const newViewState = {
+        latitude: centerLat,
+        longitude: centerLon,
+        zoom: zoom,
+      }
+
+      // Smoothly animate to show both points
+      setViewState(newViewState)
+
+      // Save view state before refresh
+      sessionStorage.setItem('mapViewState', JSON.stringify(newViewState))
+
+      setTravelAnimation({
+        startLat,
+        startLon,
+        endLat,
+        endLon,
+        meepleColor: data.meepleColor || '#7B2D26',
+        newCheckinId: data.checkin.id,
+      })
+    } else {
+      // No previous check-in, just add to map
+      // Save current view state before refresh
+      sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
+
+      // Mark as new for the drop animation
+      setNewMeepleIds(new Set([data.checkin.id]))
+      setTimeout(() => setNewMeepleIds(new Set()), 600)
+    }
+  }
+
+  // Handle travel animation completion
+  const handleTravelComplete = () => {
+    if (travelAnimation) {
+      // Just clear the travel animation - no drop needed
+      setTravelAnimation(null)
+    }
+  }
+
+  // Calculate center point and zoom to fit all tables (only if no initial table and no saved view)
   useEffect(() => {
-    if (tables.length > 0 && !initialTable) {
+    // Check if we have a saved view state (from animation)
+    const savedView = sessionStorage.getItem('mapViewState')
+
+    if (savedView && !initialTable) {
+      // Restore saved view state
+      const parsed = JSON.parse(savedView)
+      setViewState(parsed)
+      sessionStorage.removeItem('mapViewState')
+    } else if (tables.length > 0 && !initialTable) {
       const lats = tables.map(t => Number(t.latitude))
       const lons = tables.map(t => Number(t.longitude))
 
@@ -179,6 +290,18 @@ export default function WeddingMap({
             </div>
           </Marker>
         ))}
+
+        {/* Show travel animation if active */}
+        {travelAnimation && (
+          <TravelAnimation
+            startLat={travelAnimation.startLat}
+            startLon={travelAnimation.startLon}
+            endLat={travelAnimation.endLat}
+            endLon={travelAnimation.endLon}
+            meepleColor={travelAnimation.meepleColor}
+            onComplete={handleTravelComplete}
+          />
+        )}
 
         {/* Show individual meeple markers when zoomed in */}
         {showMeeples && tablesWithCheckins.map((table) =>
@@ -312,6 +435,7 @@ export default function WeddingMap({
         onOpenChange={setCheckinDialogOpen}
         table={checkinTable}
         requireCode={true}
+        onCheckinSuccess={handleCheckinSuccess}
       />
     </div>
   )
