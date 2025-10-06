@@ -55,16 +55,16 @@ export function getAnimationDuration(
   distanceMiles: number,
   mode: TransportMode
 ): number {
-  // Base durations for each mode
+  // Base durations for each mode (doubled for better viewing)
   const baseDurations = {
-    bike: 2000, // 2 seconds for short distances
-    train: 3000, // 3 seconds for medium distances
-    plane: 4000, // 4 seconds for long distances
+    bike: 4000, // 4 seconds for short distances
+    train: 6000, // 6 seconds for medium distances
+    plane: 8000, // 8 seconds for long distances
   }
 
   // Scale duration slightly based on distance
   const scaleFactor = mode === 'plane' ? 1 + (distanceMiles / 1000) : 1
-  return Math.min(baseDurations[mode] * scaleFactor, 6000) // Cap at 6 seconds
+  return Math.min(baseDurations[mode] * scaleFactor, 12000) // Cap at 12 seconds
 }
 
 /**
