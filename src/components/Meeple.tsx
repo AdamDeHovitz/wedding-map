@@ -31,88 +31,61 @@ export function Meeple({ color, size = 40, className = '' }: MeepleProps) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Meeple shape inspired by Carcassonne */}
+      {/* Standard Carcassonne meeple shape */}
       <g>
         {/* Head */}
-        <circle cx="50" cy="25" r="12" fill={color} />
+        <circle cx="50" cy="20" r="10" fill={color} />
 
-        {/* Body */}
-        <path
-          d="M 50 37
-             C 45 37, 40 40, 38 45
-             L 35 60
-             C 34 65, 32 70, 28 75
-             L 25 85
-             C 24 88, 26 90, 28 90
-             L 35 90
-             L 38 75
-             L 45 60
-             L 45 90
-             C 45 92, 47 93, 50 93
-             C 53 93, 55 92, 55 90
-             L 55 60
-             L 62 75
-             L 65 90
-             L 72 90
-             C 74 90, 76 88, 75 85
-             L 72 75
-             C 68 70, 66 65, 65 60
-             L 62 45
-             C 60 40, 55 37, 50 37
-             Z"
-          fill={color}
-        />
+        {/* Body (torso) */}
+        <ellipse cx="50" cy="50" rx="16" ry="22" fill={color} />
 
         {/* Left arm */}
-        <path
-          d="M 38 45
-             L 28 48
-             C 25 49, 23 47, 24 44
-             C 25 41, 27 40, 30 41
-             L 40 43
-             Z"
+        <ellipse
+          cx="32"
+          cy="45"
+          rx="8"
+          ry="5"
           fill={color}
+          transform="rotate(-30 32 45)"
         />
 
         {/* Right arm */}
-        <path
-          d="M 62 45
-             L 72 48
-             C 75 49, 77 47, 76 44
-             C 75 41, 73 40, 70 41
-             L 60 43
-             Z"
+        <ellipse
+          cx="68"
+          cy="45"
+          rx="8"
+          ry="5"
+          fill={color}
+          transform="rotate(30 68 45)"
+        />
+
+        {/* Left leg */}
+        <ellipse
+          cx="40"
+          cy="78"
+          rx="7"
+          ry="14"
+          fill={color}
+        />
+
+        {/* Right leg */}
+        <ellipse
+          cx="60"
+          cy="78"
+          rx="7"
+          ry="14"
           fill={color}
         />
       </g>
 
       {/* Outline for better visibility */}
-      <g stroke="#000000" strokeWidth="1.5" opacity="0.2" fill="none">
-        <circle cx="50" cy="25" r="12" />
-        <path
-          d="M 50 37
-             C 45 37, 40 40, 38 45
-             L 35 60
-             C 34 65, 32 70, 28 75
-             L 25 85
-             C 24 88, 26 90, 28 90
-             L 35 90
-             L 38 75
-             L 45 60
-             L 45 90
-             C 45 92, 47 93, 50 93
-             C 53 93, 55 92, 55 90
-             L 55 60
-             L 62 75
-             L 65 90
-             L 72 90
-             C 74 90, 76 88, 75 85
-             L 72 75
-             C 68 70, 66 65, 65 60
-             L 62 45
-             C 60 40, 55 37, 50 37
-             Z"
-        />
+      <g stroke="#000000" strokeWidth="1.5" opacity="0.3" fill="none">
+        <circle cx="50" cy="20" r="10" />
+        <ellipse cx="50" cy="50" rx="16" ry="22" />
+        <ellipse cx="32" cy="45" rx="8" ry="5" transform="rotate(-30 32 45)" />
+        <ellipse cx="68" cy="45" rx="8" ry="5" transform="rotate(30 68 45)" />
+        <ellipse cx="40" cy="78" rx="7" ry="14" />
+        <ellipse cx="60" cy="78" rx="7" ry="14" />
       </g>
     </svg>
   )
