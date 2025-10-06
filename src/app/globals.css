@@ -177,4 +177,28 @@
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-out;
   }
+
+  /* Drop and bounce animation for meeple placement */
+  @keyframes meepleDrop {
+    0% {
+      opacity: 0;
+      transform: translateY(-100px) scale(0.3);
+    }
+    50% {
+      opacity: 1;
+    }
+    70% {
+      transform: translateY(0) scale(1.1);
+    }
+    85% {
+      transform: translateY(-5px) scale(0.95);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-meepleDrop {
+    animation: meepleDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 }
