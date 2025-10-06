@@ -21,9 +21,9 @@ export default async function Home() {
 
   return (
     <div className="relative">
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-        <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
-          <h1 className="text-xl font-bold text-gray-900">Our Special Places</h1>
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 w-full max-w-md">
+        <div className="bg-white/90 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 text-center">Our Special Places</h1>
         </div>
       </div>
 

@@ -41,19 +41,19 @@ export interface Database {
       user_preferences: {
         Row: {
           email: string
-          avatar_seed: string
+          meeple_color: string
           display_name: string | null
           updated_at: string
         }
         Insert: {
           email: string
-          avatar_seed: string
+          meeple_color: string
           display_name?: string | null
           updated_at?: string
         }
         Update: {
           email?: string
-          avatar_seed?: string
+          meeple_color?: string
           display_name?: string | null
           updated_at?: string
         }

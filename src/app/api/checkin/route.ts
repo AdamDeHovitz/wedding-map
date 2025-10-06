@@ -39,13 +39,18 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!existingPrefs) {
-      // Create user preferences with default avatar seed
-      const defaultAvatarSeed = session.user.email || Math.random().toString()
+      // Create user preferences with random meeple color
+      const meepleColors = [
+        '#7B2D26', '#2D5016', '#1E3A8A', '#F59E0B', '#6B21A8', '#DC2626',
+        '#0D9488', '#EA580C', '#1E293B', '#84A98C', '#86198F', '#0EA5E9'
+      ]
+      const randomColor = meepleColors[Math.floor(Math.random() * meepleColors.length)]
+
       await supabase
         .from('user_preferences')
         .insert({
           email: session.user.email!,
-          avatar_seed: defaultAvatarSeed,
+          meeple_color: randomColor,
           display_name: session.user.name || null,
         })
     }

@@ -125,4 +125,40 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Mobile optimizations */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  /* Ensure buttons are at least 44px (Apple's recommendation) for touch targets */
+  button {
+    @apply min-h-[44px];
+  }
+
+  /* Better touch scrolling on iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Safe area support for notched devices */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Prevent zoom on input focus (iOS) */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  @media (min-width: 640px) {
+    input, textarea, select {
+      font-size: 14px;
+    }
+  }
 }
