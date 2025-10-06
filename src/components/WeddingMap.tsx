@@ -170,13 +170,11 @@ export default function WeddingMap({
         newCheckinId: data.checkin.id,
       })
     } else {
-      // No previous check-in, just add to map
-      // Save current view state before refresh
+      // No previous check-in - save view state and let useEffect handle drop animation after refresh
       sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
 
-      // Mark as new for the drop animation
-      setNewMeepleIds(new Set([data.checkin.id]))
-      setTimeout(() => setNewMeepleIds(new Set()), 600)
+      // Store the new checkin ID so we can trigger animation after refresh
+      sessionStorage.setItem('pendingDropAnimation', data.checkin.id)
     }
   }
 
@@ -192,6 +190,7 @@ export default function WeddingMap({
   useEffect(() => {
     // Check if we have a saved view state (from animation)
     const savedView = sessionStorage.getItem('mapViewState')
+    const pendingDrop = sessionStorage.getItem('pendingDropAnimation')
 
     if (savedView && !initialTable) {
       // Restore saved view state
@@ -223,6 +222,13 @@ export default function WeddingMap({
         longitude: avgLon,
         zoom: zoom,
       })
+    }
+
+    // Handle pending drop animation after refresh
+    if (pendingDrop) {
+      setNewMeepleIds(new Set([pendingDrop]))
+      setTimeout(() => setNewMeepleIds(new Set()), 600)
+      sessionStorage.removeItem('pendingDropAnimation')
     }
   }, [tables, initialTable])
 

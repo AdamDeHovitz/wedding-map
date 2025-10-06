@@ -87,7 +87,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       // Delay refresh to allow animation to play
       // If there's travel animation, wait longer
       const hasTravel = data.previousCheckin && data.previousCheckin.wedding_tables
-      const delay = hasTravel ? 8000 : 1000 // 8 seconds for travel, 1 second for drop
+      const delay = hasTravel ? 13000 : 1000 // 13 seconds for travel (max 12s animation + 1s buffer), 1 second for drop
 
       setTimeout(() => {
         router.refresh()
