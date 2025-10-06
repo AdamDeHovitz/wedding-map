@@ -55,6 +55,16 @@ export async function POST(request: NextRequest) {
         })
     }
 
+    // Get user's previous check-in (before this one)
+    const { data: previousCheckins } = await supabase
+      .from('guest_checkins')
+      .select('*, wedding_tables(*)')
+      .eq('guest_email', session.user.email!)
+      .order('checked_in_at', { ascending: false })
+      .limit(1)
+
+    const previousCheckin = previousCheckins?.[0] || null
+
     // Insert the check-in
     const { data, error } = await supabase
       .from('guest_checkins')
@@ -64,7 +74,7 @@ export async function POST(request: NextRequest) {
         guest_name: session.user.name || 'Guest',
         message: message || null,
       })
-      .select()
+      .select('*, wedding_tables(*)')
       .single()
 
     if (error) {
@@ -83,7 +93,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, checkin: data })
+    return NextResponse.json({
+      success: true,
+      checkin: data,
+      previousCheckin: previousCheckin,
+      meepleColor: existingPrefs?.meeple_color || null,
+    })
   } catch (error) {
     console.error('Check-in error:', error)
     return NextResponse.json(
