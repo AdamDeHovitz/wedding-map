@@ -45,7 +45,7 @@ export default function AddTableForm() {
       }
 
       router.push('/admin')
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.')
       setIsSubmitting(false)
     }

@@ -1,18 +1,34 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-export default async function AdminPage() {
-  const { data: tables } = await supabase
-    .from('wedding_tables')
-    .select('*, guest_checkins(count)')
-    .order('name')
+export default function AdminPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [tables, setTables] = useState<any[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [allCheckins, setAllCheckins] = useState<any[]>([])
 
-  const { data: allCheckins } = await supabase
-    .from('guest_checkins')
-    .select('*')
-    .order('checked_in_at', { ascending: false })
+  useEffect(() => {
+    async function fetchData() {
+      const { data: tablesData } = await supabase
+        .from('wedding_tables')
+        .select('*, guest_checkins(count)')
+        .order('name')
+
+      const { data: checkinsData } = await supabase
+        .from('guest_checkins')
+        .select('*')
+        .order('checked_in_at', { ascending: false })
+
+      setTables(tablesData || [])
+      setAllCheckins(checkinsData || [])
+    }
+    fetchData()
+  }, [])
 
   const totalGuests = new Set(allCheckins?.map(c => c.guest_email)).size
 
@@ -128,7 +144,7 @@ export default async function AdminPage() {
                         <p className="font-medium">{checkin.guest_name}</p>
                         <p className="text-sm text-gray-600">{checkin.guest_email}</p>
                         {checkin.message && (
-                          <p className="text-sm text-gray-700 italic mt-1">"{checkin.message}"</p>
+                          <p className="text-sm text-gray-700 italic mt-1">&quot;{checkin.message}&quot;</p>
                         )}
                       </div>
                       <div className="text-right text-sm">

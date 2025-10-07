@@ -96,7 +96,9 @@ export default function WeddingMap({
 
   // Handle successful check-in with animation
   const handleCheckinSuccess = (data: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     checkin: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     previousCheckin: any | null
     meepleColor: string | null
   }) => {
@@ -285,6 +287,7 @@ export default function WeddingMap({
             <div className="relative cursor-pointer group active:scale-95 transition-all duration-300 animate-fadeIn">
               {/* Table icon bubble */}
               <div className="relative w-20 h-20 sm:w-16 sm:h-16 rounded-full overflow-hidden shadow-lg border-4 border-white bg-white group-hover:scale-110 active:scale-105 flex items-center justify-center p-0.5 transition-all duration-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/table-icons/${table.unique_code}.png`}
                   alt={table.name}
@@ -386,7 +389,7 @@ export default function WeddingMap({
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900">{checkin.guest_name}</p>
                             {checkin.message && (
-                              <p className="text-xs text-gray-600 italic mt-1">"{checkin.message}"</p>
+                              <p className="text-xs text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
                             )}
                           </div>
                         </div>
@@ -423,7 +426,7 @@ export default function WeddingMap({
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-base text-gray-900">{selectedMeeple.guest_name}</p>
                     {selectedMeeple.message && (
-                      <p className="text-sm text-gray-600 italic mt-2">"{selectedMeeple.message}"</p>
+                      <p className="text-sm text-gray-600 italic mt-2">&quot;{selectedMeeple.message}&quot;</p>
                     )}
                     <p className="text-xs text-gray-400 mt-2">
                       {new Date(selectedMeeple.checked_in_at).toLocaleDateString()}

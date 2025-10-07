@@ -79,7 +79,7 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
       setTimeout(() => {
         router.push('/')
       }, 2000)
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.')
       setIsSubmitting(false)
     }
@@ -135,7 +135,7 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
         <CardHeader>
           <CardTitle>Already Checked In</CardTitle>
           <CardDescription>
-            You've already checked in to this location!
+            You&apos;ve already checked in to this location!
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -181,11 +181,11 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded">
             <div className="flex-shrink-0">
-              <Meeple color={getMeepleColor(session.user.email || '')} size={40} />
+              <Meeple color={getMeepleColor(session.user?.email || '')} size={40} />
             </div>
             <div>
-              <p className="font-medium text-sm">{session.user.name}</p>
-              <p className="text-xs text-gray-600">{session.user.email}</p>
+              <p className="font-medium text-sm">{session.user?.name}</p>
+              <p className="text-xs text-gray-600">{session.user?.email}</p>
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{checkin.guest_name}</p>
                     {checkin.message && (
-                      <p className="text-sm text-gray-600 italic mt-1">"{checkin.message}"</p>
+                      <p className="text-sm text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
                     )}
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(checkin.checked_in_at).toLocaleDateString()}

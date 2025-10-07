@@ -20,7 +20,9 @@ interface CheckinDialogProps {
   table: WeddingTable | null
   requireCode?: boolean // If false, skip code verification (for QR code flow)
   onCheckinSuccess?: (data: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     checkin: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     previousCheckin: any | null
     meepleColor: string | null
   }) => void

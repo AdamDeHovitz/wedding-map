@@ -66,7 +66,7 @@ export default function AvatarCustomizer({ userEmail, currentSeed }: AvatarCusto
       setTimeout(() => {
         router.refresh()
       }, 1000)
-    } catch (err) {
+    } catch {
       setSaveMessage('Something went wrong. Please try again.')
       setIsSaving(false)
     }
@@ -161,7 +161,7 @@ export default function AvatarCustomizer({ userEmail, currentSeed }: AvatarCusto
       )}
 
       <div className="text-xs text-gray-500 space-y-1">
-        <p>💡 Tip: Click "Randomize" multiple times until you find an avatar you like!</p>
+        <p>💡 Tip: Click &quot;Randomize&quot; multiple times until you find an avatar you like!</p>
         <p>✨ Your avatar will update across all your past and future check-ins.</p>
       </div>
     </div>

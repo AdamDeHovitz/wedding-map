@@ -104,6 +104,13 @@ export interface RouteSegment {
   lineName?: string
 }
 
+interface ApiSegment {
+  polyline: string
+  type: 'walking' | 'transit'
+  color: string
+  lineName?: string
+}
+
 /**
  * Fetch transit route from Google Maps Directions API via our server endpoint
  * Returns array of colored route segments or null if fetch fails
@@ -124,7 +131,7 @@ async function fetchGoogleTransitRoute(
     if (!data.segments || data.segments.length === 0) return null
 
     // Decode each segment's polyline and convert to RouteSegment format
-    const segments: RouteSegment[] = data.segments.map((seg: any) => ({
+    const segments: RouteSegment[] = data.segments.map((seg: ApiSegment) => ({
       coordinates: decodePolyline(seg.polyline),
       type: seg.type,
       color: seg.color,
