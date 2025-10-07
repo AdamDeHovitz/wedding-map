@@ -443,7 +443,7 @@ export default function WeddingMap({
         open={checkinDialogOpen}
         onOpenChange={setCheckinDialogOpen}
         table={checkinTable}
-        requireCode={true}
+        requireCode={!initialTable}
         onCheckinSuccess={handleCheckinSuccess}
       />
     </div>
