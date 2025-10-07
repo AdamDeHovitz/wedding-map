@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/database'
 
 // Use service role key to bypass RLS for insertions
-const supabase = createClient<Database>(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -46,13 +45,11 @@ export async function POST(request: NextRequest) {
       ]
       const randomColor = meepleColors[Math.floor(Math.random() * meepleColors.length)]
 
-      await supabase
-        .from('user_preferences')
-        .insert({
-          email: session.user.email!,
-          meeple_color: randomColor,
-          display_name: session.user.name || null,
-        })
+      await supabase.from('user_preferences').insert({
+        email: session.user.email!,
+        meeple_color: randomColor,
+        display_name: session.user.name || null,
+      })
     }
 
     // Get user's previous check-in (before this one)

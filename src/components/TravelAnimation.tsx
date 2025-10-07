@@ -10,7 +10,6 @@ import {
   generatePathPoints,
   getTransportIcon,
   type PathData,
-  type RouteSegment,
 } from '@/lib/travel'
 
 interface TravelAnimationProps {
@@ -35,7 +34,7 @@ export function TravelAnimation({
   const [pathData, setPathData] = useState<PathData | null>(null)
   const [isLoadingPath, setIsLoadingPath] = useState(true)
   const startTimeRef = useRef<number>(Date.now())
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | undefined>(undefined)
 
   // Calculate distance and transport mode
   const distance = calculateDistance(startLat, startLon, endLat, endLon)
@@ -135,7 +134,7 @@ export function TravelAnimation({
             },
           }
 
-          const linePaint: any = {
+          const linePaint: Record<string, string | number | number[]> = {
             'line-color': segment.color,
             'line-width': segment.type === 'walking' ? 3 : 5,
             'line-opacity': 0.8,

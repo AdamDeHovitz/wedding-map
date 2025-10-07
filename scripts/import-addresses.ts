@@ -9,7 +9,6 @@
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
-import { Database } from '../src/types/database'
 
 // Load environment variables
 import * as dotenv from 'dotenv'
@@ -24,7 +23,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1)
 }
 
-const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey)
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 interface Address {
   name: string
@@ -62,15 +61,13 @@ async function importAddresses() {
       }
 
       // Insert the address
-      const { error } = await supabase
-        .from('wedding_tables')
-        .insert({
-          name: addr.name,
-          address: addr.address,
-          unique_code: addr.unique_code,
-          latitude: addr.latitude,
-          longitude: addr.longitude,
-        })
+      const { error } = await supabase.from('wedding_tables').insert({
+        name: addr.name,
+        address: addr.address,
+        unique_code: addr.unique_code,
+        latitude: addr.latitude,
+        longitude: addr.longitude,
+      })
 
       if (error) {
         throw error

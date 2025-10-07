@@ -44,7 +44,7 @@ export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCust
       setTimeout(() => {
         router.refresh()
       }, 1000)
-    } catch (err) {
+    } catch {
       setSaveMessage('Something went wrong. Please try again.')
       setIsSaving(false)
     }

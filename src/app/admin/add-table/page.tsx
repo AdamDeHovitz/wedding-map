@@ -28,7 +28,7 @@ export default function AddTablePage() {
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2">Tips:</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Use a descriptive table name (e.g., "Table 1", "The Brooklyn Bridge")</li>
+            <li>• Use a descriptive table name (e.g., &quot;Table 1&quot;, &quot;The Brooklyn Bridge&quot;)</li>
             <li>• The unique code will be used in the URL (e.g., /checkin/table-1)</li>
             <li>• You can find coordinates by searching the address on Google Maps and copying the lat/long from the URL</li>
           </ul>
