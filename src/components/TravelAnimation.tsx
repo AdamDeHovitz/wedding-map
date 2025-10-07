@@ -135,17 +135,23 @@ export function TravelAnimation({
             },
           }
 
+          const linePaint: any = {
+            'line-color': segment.color,
+            'line-width': segment.type === 'walking' ? 3 : 5,
+            'line-opacity': 0.8,
+          }
+
+          // Only add dasharray for walking segments
+          if (segment.type === 'walking') {
+            linePaint['line-dasharray'] = [2, 2]
+          }
+
           return (
             <Source key={`segment-${index}`} id={`travel-segment-${index}`} type="geojson" data={segmentGeoJSON}>
               <Layer
                 id={`travel-segment-line-${index}`}
                 type="line"
-                paint={{
-                  'line-color': segment.color,
-                  'line-width': segment.type === 'walking' ? 3 : 5,
-                  'line-opacity': 0.8,
-                  'line-dasharray': segment.type === 'walking' ? [2, 2] : undefined,
-                }}
+                paint={linePaint}
               />
               {/* White overlay for transit lines */}
               {segment.type === 'transit' && (
