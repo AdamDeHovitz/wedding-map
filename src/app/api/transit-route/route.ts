@@ -62,7 +62,10 @@ export async function GET(request: NextRequest) {
         } else if (step.travel_mode === 'TRANSIT') {
           const transitDetails = step.transit_details
           // Get the line color from Google's transit data
-          const lineColor = transitDetails?.line?.color ? `#${transitDetails.line.color}` : '#8b5cf6' // Default purple
+          const rawColor = transitDetails?.line?.color
+          const lineColor = rawColor
+            ? (rawColor.startsWith('#') ? rawColor : `#${rawColor}`)
+            : '#8b5cf6' // Default purple
           const lineName = transitDetails?.line?.short_name || transitDetails?.line?.name || 'Transit'
 
           segments.push({
