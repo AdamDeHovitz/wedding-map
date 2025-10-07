@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
 import { WeddingTable } from '@/types/database'
 import {
   Dialog,
@@ -30,6 +31,7 @@ interface CheckinDialogProps {
 
 export function CheckinDialog({ open, onOpenChange, table, requireCode = true, onCheckinSuccess }: CheckinDialogProps) {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [step, setStep] = useState<'code' | 'message'>(requireCode ? 'code' : 'message')
   const [code, setCode] = useState('')
   const [message, setMessage] = useState('')
@@ -119,6 +121,44 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
   }
 
   if (!table) return null
+
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex items-center justify-center p-8">
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Show sign-in prompt if not authenticated
+  if (!session) {
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif">Sign In to Check In</DialogTitle>
+            <DialogDescription>
+              Sign in with your Google account to leave your mark at {table.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <Button
+              onClick={() => signIn('google')}
+              className="w-full"
+              size="lg"
+            >
+              Sign In with Google
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

@@ -10,6 +10,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "fix-coordinates": "tsx scripts/fix-coordinates.ts",
+    "update-coordinates": "tsx scripts/update-coordinates.ts",
     "import-addresses": "tsx scripts/import-addresses.ts"
   },
   "dependencies": {
