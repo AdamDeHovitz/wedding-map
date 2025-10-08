@@ -41,35 +41,6 @@ export default async function Home() {
     created_at: new Date().toISOString()
   }
 
-  // Auto check-in logged in users to Rule of Thirds venue
-  if (session?.user?.email && session?.user?.name) {
-    const userEmail = session.user.email
-    const userName = session.user.name
-
-    const existingCheckin = checkins?.find(
-      c => c.guest_email === userEmail && c.table_id === 'rule-of-thirds'
-    )
-
-    if (!existingCheckin) {
-      await supabase.from('guest_checkins').insert({
-        table_id: 'rule-of-thirds',
-        guest_email: userEmail,
-        guest_name: userName,
-        message: 'Welcome to our wedding!'
-      })
-
-      // Re-fetch checkins to include the new one
-      const { data: updatedCheckins } = await supabase
-        .from('guest_checkins')
-        .select('*')
-        .order('checked_in_at', { ascending: false })
-
-      if (updatedCheckins) {
-        checkins = updatedCheckins
-      }
-    }
-  }
-
   const allTables = [...(tables || []), ruleOfThirdsVenue]
 
   return (
