@@ -214,26 +214,35 @@
 
   /* Make Mapbox popup close button larger for mobile */
   .mapboxgl-popup-close-button {
-    width: 44px !important;
-    height: 44px !important;
-    font-size: 28px !important;
-    line-height: 44px !important;
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 32px !important;
+    line-height: 48px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-    color: #333 !important;
+    background: #7B2D26 !important; /* Burgundy background */
+    color: #F5E6D3 !important; /* Cream text */
     font-weight: bold !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
     transition: all 0.2s ease !important;
+    border: 2px solid #F5E6D3 !important; /* Cream border */
+    cursor: pointer !important;
   }
 
   .mapboxgl-popup-close-button:hover {
-    background: rgba(255, 255, 255, 1) !important;
-    color: #000 !important;
+    background: #8B3D36 !important; /* Lighter burgundy on hover */
+    color: #FFFFFF !important;
     transform: scale(1.1) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
   }
 
   .mapboxgl-popup-close-button:active {
     transform: scale(0.95) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* Ensure popup close button is above other elements */
+  .mapboxgl-popup-content {
+    position: relative !important;
   }
 }
