@@ -92,10 +92,31 @@ export default function WeddingMap({
   }
 
   // Group check-ins by table
-  const tablesWithCheckins: TableWithCheckins[] = tables.map(table => ({
-    ...table,
-    checkins: checkins.filter(c => c.table_id === table.id)
-  }))
+  const tablesWithCheckins: TableWithCheckins[] = tables.map(table => {
+    let tableCheckins = checkins.filter(c => c.table_id === table.id)
+
+    // For Rule of Thirds, add virtual checkins for all users with preferences
+    if (table.id === 'rule-of-thirds') {
+      const existingEmails = new Set(tableCheckins.map(c => c.guest_email))
+      const virtualCheckins = userPreferences
+        .filter(pref => !existingEmails.has(pref.email))
+        .map(pref => ({
+          id: `virtual-${pref.email}`,
+          table_id: table.id,
+          guest_email: pref.email,
+          guest_name: pref.display_name || pref.email.split('@')[0],
+          message: null,
+          checked_in_at: new Date().toISOString()
+        }))
+
+      tableCheckins = [...tableCheckins, ...virtualCheckins]
+    }
+
+    return {
+      ...table,
+      checkins: tableCheckins
+    }
+  })
 
   // Handle successful check-in with animation
   const handleCheckinSuccess = (data: {
@@ -276,37 +297,57 @@ export default function WeddingMap({
         keyboard={false}
       >
         {/* Show table icon markers (always visible) */}
-        {tablesWithCheckins.map((table) => (
-          <Marker
-            key={table.id}
-            longitude={Number(table.longitude)}
-            latitude={Number(table.latitude)}
-            anchor="bottom"
-            onClick={e => {
-              e.originalEvent.stopPropagation()
-              // Toggle: close if already selected, open if not
-              if (selectedTable?.id === table.id) {
-                setSelectedTable(null)
-              } else {
-                setSelectedTable(table)
-              }
-            }}
-          >
-            <div className="relative cursor-pointer group active:scale-95 transition-all duration-300 animate-fadeIn">
-              {/* Table icon bubble */}
-              <div className="relative w-20 h-20 sm:w-16 sm:h-16 rounded-full overflow-hidden shadow-lg border-4 border-white bg-white group-hover:scale-110 active:scale-105 flex items-center justify-center p-0.5 transition-all duration-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/table-icons/${table.unique_code}.png`}
-                  alt={table.name}
-                  className="w-full h-full object-contain"
+        {tablesWithCheckins.map((table) => {
+          const isRuleOfThirds = table.id === 'rule-of-thirds'
+          const bgColor = isRuleOfThirds ? '#7B2D26' : '#F5E6D3'
+          const borderColor = isRuleOfThirds ? '#F5E6D3' : '#7B2D26'
+
+          return (
+            <Marker
+              key={table.id}
+              longitude={Number(table.longitude)}
+              latitude={Number(table.latitude)}
+              anchor="bottom"
+              onClick={e => {
+                e.originalEvent.stopPropagation()
+                // Toggle: close if already selected, open if not
+                if (selectedTable?.id === table.id) {
+                  setSelectedTable(null)
+                } else {
+                  setSelectedTable(table)
+                }
+              }}
+            >
+              <div className="relative cursor-pointer group active:scale-95 transition-all duration-300 animate-fadeIn">
+                {/* Table icon bubble */}
+                <div
+                  className="relative w-20 h-20 sm:w-16 sm:h-16 rounded-full overflow-hidden shadow-lg border-4 group-hover:scale-110 active:scale-105 flex items-center justify-center p-0.5 transition-all duration-200"
+                  style={{
+                    backgroundColor: bgColor,
+                    borderColor: borderColor
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/table-icons/${table.unique_code}.png`}
+                    alt={table.name}
+                    className="w-full h-full object-contain"
+                    style={{
+                      filter: isRuleOfThirds
+                        ? 'brightness(0) invert(1) sepia(0.2) saturate(0.3) brightness(1.1)' // Cream colored icons on burgundy
+                        : 'brightness(0.3) sepia(1) saturate(5) hue-rotate(345deg) brightness(0.8)' // Burgundy colored icons on cream
+                    }}
+                  />
+                </div>
+                {/* Pin pointer */}
+                <div
+                  className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[12px] border-l-transparent border-r-transparent"
+                  style={{ borderTopColor: bgColor }}
                 />
               </div>
-              {/* Pin pointer */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[12px] border-l-transparent border-r-transparent border-t-white" />
-            </div>
-          </Marker>
-        ))}
+            </Marker>
+          )
+        })}
 
         {/* Show travel animation if active */}
         {travelAnimation && (
