@@ -20,7 +20,7 @@ export default async function Home() {
     .order('name')
 
   // Fetch all check-ins
-  let { data: checkins } = await supabase
+  const { data: checkins } = await supabase
     .from('guest_checkins')
     .select('*')
     .order('checked_in_at', { ascending: false })
