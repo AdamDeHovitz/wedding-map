@@ -49,7 +49,14 @@ export async function POST(request: NextRequest) {
         email: session.user.email!,
         meeple_color: randomColor,
         display_name: session.user.name || null,
+        current_location_id: tableId,
       })
+    } else {
+      // Update current location for existing user
+      await supabase
+        .from('user_preferences')
+        .update({ current_location_id: tableId })
+        .eq('email', session.user.email!)
     }
 
     // Get user's previous check-in (before this one)

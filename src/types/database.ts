@@ -43,18 +43,21 @@ export interface Database {
           email: string
           meeple_color: string
           display_name: string | null
+          current_location_id: string | null
           updated_at: string
         }
         Insert: {
           email: string
           meeple_color: string
           display_name?: string | null
+          current_location_id?: string | null
           updated_at?: string
         }
         Update: {
           email?: string
           meeple_color?: string
           display_name?: string | null
+          current_location_id?: string | null
           updated_at?: string
         }
       }

@@ -91,32 +91,21 @@ export default function WeddingMap({
     }
   }
 
-  // Group check-ins by table
+  // Group check-ins by table - show all users who have checked in
   const tablesWithCheckins: TableWithCheckins[] = tables.map(table => {
-    let tableCheckins = checkins.filter(c => c.table_id === table.id)
-
-    // For Rule of Thirds, add virtual checkins for all users with preferences
-    if (table.id === 'rule-of-thirds') {
-      const existingEmails = new Set(tableCheckins.map(c => c.guest_email))
-      const virtualCheckins = userPreferences
-        .filter(pref => !existingEmails.has(pref.email))
-        .map(pref => ({
-          id: `virtual-${pref.email}`,
-          table_id: table.id,
-          guest_email: pref.email,
-          guest_name: pref.display_name || pref.email.split('@')[0],
-          message: null,
-          checked_in_at: new Date().toISOString()
-        }))
-
-      tableCheckins = [...tableCheckins, ...virtualCheckins]
-    }
+    const tableCheckins = checkins.filter(c => c.table_id === table.id)
 
     return {
       ...table,
       checkins: tableCheckins
     }
   })
+
+  // Helper to check if a user is currently at a location
+  const isUserCurrentlyAtLocation = (email: string, tableId: string) => {
+    const userPref = userPreferences.find(pref => pref.email === email)
+    return userPref?.current_location_id === tableId
+  }
 
   // Handle successful check-in with animation
   const handleCheckinSuccess = (data: {
@@ -209,6 +198,85 @@ export default function WeddingMap({
     if (travelAnimation) {
       // Just clear the travel animation - no drop needed
       setTravelAnimation(null)
+    }
+  }
+
+  // Handle successful visit with animation
+  const handleVisit = async (table: WeddingTable) => {
+    try {
+      const response = await fetch('/api/visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tableId: table.id }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || 'Failed to visit location')
+        return
+      }
+
+      const data = await response.json()
+
+      // Show travel animation if there's a previous location
+      if (data.previousLocation) {
+        const prevLat = Number(data.previousLocation.latitude)
+        const prevLon = Number(data.previousLocation.longitude)
+        const newLat = Number(data.newLocation.latitude)
+        const newLon = Number(data.newLocation.longitude)
+
+        // Calculate bounds to show both locations
+        const minLat = Math.min(prevLat, newLat)
+        const maxLat = Math.max(prevLat, newLat)
+        const minLon = Math.min(prevLon, newLon)
+        const maxLon = Math.max(prevLon, newLon)
+
+        const centerLat = (minLat + maxLat) / 2
+        const centerLon = (minLon + maxLon) / 2
+
+        const latDiff = maxLat - minLat
+        const lonDiff = maxLon - minLon
+        const maxDiff = Math.max(latDiff, lonDiff)
+        const paddedDiff = maxDiff * 1.3
+
+        let zoom
+        if (paddedDiff < 0.001) zoom = 16
+        else if (paddedDiff < 0.003) zoom = 15
+        else if (paddedDiff < 0.008) zoom = 14
+        else if (paddedDiff < 0.02) zoom = 13
+        else if (paddedDiff < 0.05) zoom = 12
+        else if (paddedDiff < 0.15) zoom = 11
+        else if (paddedDiff < 0.5) zoom = 9
+        else if (paddedDiff < 2) zoom = 7
+        else if (paddedDiff < 5) zoom = 6
+        else if (paddedDiff < 15) zoom = 5
+        else if (paddedDiff < 40) zoom = 4
+        else if (paddedDiff < 90) zoom = 3
+        else zoom = 2
+
+        setViewState({
+          latitude: centerLat,
+          longitude: centerLon,
+          zoom: zoom,
+        })
+
+        setTravelAnimation({
+          startLat: prevLat,
+          startLon: prevLon,
+          endLat: newLat,
+          endLon: newLon,
+          meepleColor: data.meepleColor || '#7B2D26',
+          newCheckinId: `visit-${Date.now()}`,
+        })
+      }
+
+      // Refresh the page to update the meeple positions
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+    } catch (error) {
+      console.error('Visit error:', error)
+      alert('Failed to visit location')
     }
   }
 
@@ -373,6 +441,7 @@ export default function WeddingMap({
               index,
               table.checkins.length
             )
+            const isCurrentlyHere = isUserCurrentlyAtLocation(checkin.guest_email, table.id)
 
             return (
               <Marker
@@ -390,7 +459,10 @@ export default function WeddingMap({
                   }
                 }}
               >
-                <div className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'}`}>
+                <div
+                  className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''}`}
+                  style={!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined}
+                >
                   <Meeple
                     color={getMeepleColor(checkin.guest_email)}
                     size={40}
@@ -430,35 +502,71 @@ export default function WeddingMap({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-gray-700">
-                        {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} visited
+                        {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} here
                       </p>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setCheckinTable(selectedTable)
-                          setCheckinDialogOpen(true)
-                          setSelectedTable(null)
-                        }}
-                      >
-                        Check In
-                      </Button>
+                      {(() => {
+                        // Check if current user has checked in to this location before
+                        const hasCheckedIn = currentUserEmail && checkins.some(
+                          c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+                        )
+
+                        if (hasCheckedIn) {
+                          return (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                handleVisit(selectedTable)
+                                setSelectedTable(null)
+                              }}
+                            >
+                              Visit
+                            </Button>
+                          )
+                        } else {
+                          return (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setCheckinTable(selectedTable)
+                                setCheckinDialogOpen(true)
+                                setSelectedTable(null)
+                              }}
+                            >
+                              Check In
+                            </Button>
+                          )
+                        }
+                      })()}
                     </div>
 
                     {selectedTable.checkins.length > 0 && (
                       <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {selectedTable.checkins.map((checkin) => (
-                          <div key={checkin.id} className="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <div className="flex-shrink-0">
-                              <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
+                        {selectedTable.checkins.map((checkin) => {
+                          const isCurrentlyHere = isUserCurrentlyAtLocation(checkin.guest_email, selectedTable.id)
+                          return (
+                            <div
+                              key={checkin.id}
+                              className={`flex items-start gap-2 p-2 bg-gray-50 rounded ${!isCurrentlyHere ? 'opacity-60' : ''}`}
+                            >
+                              <div
+                                className="flex-shrink-0"
+                                style={!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined}
+                              >
+                                <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {checkin.guest_name}
+                                  {!isCurrentlyHere && <span className="text-xs text-gray-400 ml-1">(away)</span>}
+                                </p>
+                                {checkin.message && (
+                                  <p className="text-xs text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900">{checkin.guest_name}</p>
-                              {checkin.message && (
-                                <p className="text-xs text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
                   </div>
