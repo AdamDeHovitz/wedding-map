@@ -27,7 +27,7 @@ interface TableWithCheckins extends WeddingTable {
 export default function WeddingMap({
   tables,
   checkins,
-  userPreferences,
+  userPreferences: initialUserPreferences,
   initialTable = null,
   showCheckinDialog = false,
   currentUserEmail = null
@@ -38,6 +38,7 @@ export default function WeddingMap({
   const [checkinTable, setCheckinTable] = useState<WeddingTable | null>(initialTable)
   const [newMeepleIds, setNewMeepleIds] = useState<Set<string>>(new Set())
   const previousCheckinIds = useRef<Set<string>>(new Set())
+  const [userPreferences, setUserPreferences] = useState<UserPreferences[]>(initialUserPreferences)
   const [travelAnimation, setTravelAnimation] = useState<{
     startLat: number
     startLon: number
@@ -60,6 +61,74 @@ export default function WeddingMap({
   const meepleColorMap = new Map(
     userPreferences.map(pref => [pref.email, pref.meeple_color])
   )
+
+  // Helper function to check if both points are visible in current viewport
+  const arePointsVisible = (lat1: number, lon1: number, lat2: number, lon2: number, currentZoom: number) => {
+    // Calculate rough viewport size based on zoom level
+    // At zoom level N, viewport is roughly 360 / (2^N) degrees wide
+    const viewportSize = 360 / Math.pow(2, currentZoom)
+
+    // Get current viewport bounds with some margin
+    const margin = viewportSize * 0.1 // 10% margin
+    const latDiff = Math.abs(lat1 - lat2)
+    const lonDiff = Math.abs(lon1 - lon2)
+
+    // Check if both points would fit in current viewport
+    return latDiff < viewportSize - margin && lonDiff < viewportSize - margin
+  }
+
+  // Smart zoom calculation - returns null if no zoom change needed
+  const calculateOptimalView = (
+    startLat: number,
+    startLon: number,
+    endLat: number,
+    endLon: number,
+    currentViewState: typeof viewState
+  ): typeof viewState | null => {
+    // Check if both points are already visible
+    if (arePointsVisible(startLat, startLon, endLat, endLon, currentViewState.zoom)) {
+      return null // No change needed
+    }
+
+    // Calculate bounds to show both locations
+    const minLat = Math.min(startLat, endLat)
+    const maxLat = Math.max(startLat, endLat)
+    const minLon = Math.min(startLon, endLon)
+    const maxLon = Math.max(startLon, endLon)
+
+    const centerLat = (minLat + maxLat) / 2
+    const centerLon = (minLon + maxLon) / 2
+
+    const latDiff = maxLat - minLat
+    const lonDiff = maxLon - minLon
+    const maxDiff = Math.max(latDiff, lonDiff)
+
+    // Reduced padding for smoother experience
+    const paddedDiff = maxDiff * 1.2 // Changed from 1.3
+
+    // Improved zoom thresholds with higher minimums for close distances
+    let zoom
+    if (paddedDiff < 0.0005) zoom = 16      // Very close (< 55 meters)
+    else if (paddedDiff < 0.001) zoom = 15   // Block level (< 110 meters)
+    else if (paddedDiff < 0.003) zoom = 15   // Few blocks (< 330 meters) - increased from 14
+    else if (paddedDiff < 0.008) zoom = 14   // Neighborhood (< 880 meters)
+    else if (paddedDiff < 0.02) zoom = 14    // District (< 2.2 km) - increased from 13
+    else if (paddedDiff < 0.05) zoom = 13    // City district (< 5.5 km) - increased from 12
+    else if (paddedDiff < 0.15) zoom = 11    // City (< 16 km)
+    else if (paddedDiff < 0.5) zoom = 9      // Metro area
+    else if (paddedDiff < 2) zoom = 7        // Region
+    else if (paddedDiff < 5) zoom = 6        // State/Province
+    else if (paddedDiff < 15) zoom = 5       // Multiple states
+    else if (paddedDiff < 40) zoom = 4       // Country
+    else if (paddedDiff < 90) zoom = 3       // Continent
+    else zoom = 2                            // Cross-continental
+
+    return {
+      latitude: centerLat,
+      longitude: centerLon,
+      zoom: zoom,
+    }
+  }
 
   // Helper to get meeple color for a user
   const getMeepleColor = (email: string) => {
@@ -125,56 +194,18 @@ export default function WeddingMap({
       const endLat = Number(newTable.latitude)
       const endLon = Number(newTable.longitude)
 
-      // Calculate bounds to show both locations
-      const minLat = Math.min(startLat, endLat)
-      const maxLat = Math.max(startLat, endLat)
-      const minLon = Math.min(startLon, endLon)
-      const maxLon = Math.max(startLon, endLon)
+      // Calculate optimal view - only changes if needed
+      const optimalView = calculateOptimalView(startLat, startLon, endLat, endLon, viewState)
 
-      // Calculate center
-      const centerLat = (minLat + maxLat) / 2
-      const centerLon = (minLon + maxLon) / 2
-
-      // Calculate zoom level to fit both points with padding
-      const latDiff = maxLat - minLat
-      const lonDiff = maxLon - minLon
-
-      // Use logarithmic scaling for better zoom levels across different distances
-      // This ensures both points are visible with some padding
-      const maxDiff = Math.max(latDiff, lonDiff)
-
-      // Add 30% padding to the bounds
-      const paddedDiff = maxDiff * 1.3
-
-      // Calculate zoom level based on the padded difference
-      // More granular thresholds for better visibility at all distance scales
-      // 1 degree ≈ 111 km at equator
-      let zoom
-      if (paddedDiff < 0.001) zoom = 16      // Block level (< 110 meters)
-      else if (paddedDiff < 0.003) zoom = 15  // Few blocks (< 330 meters)
-      else if (paddedDiff < 0.008) zoom = 14  // Neighborhood (< 880 meters)
-      else if (paddedDiff < 0.02) zoom = 13   // District (< 2.2 km)
-      else if (paddedDiff < 0.05) zoom = 12   // City district (< 5.5 km)
-      else if (paddedDiff < 0.15) zoom = 11   // City (< 16 km)
-      else if (paddedDiff < 0.5) zoom = 9     // Metro area
-      else if (paddedDiff < 2) zoom = 7       // Region
-      else if (paddedDiff < 5) zoom = 6       // State/Province
-      else if (paddedDiff < 15) zoom = 5      // Multiple states
-      else if (paddedDiff < 40) zoom = 4      // Country
-      else if (paddedDiff < 90) zoom = 3      // Continent
-      else zoom = 2                           // Cross-continental
-
-      const newViewState = {
-        latitude: centerLat,
-        longitude: centerLon,
-        zoom: zoom,
+      if (optimalView) {
+        // Only update view if both points aren't already visible
+        setViewState(optimalView)
+        // Save view state before refresh
+        sessionStorage.setItem('mapViewState', JSON.stringify(optimalView))
+      } else {
+        // Save current view state
+        sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
       }
-
-      // Smoothly animate to show both points
-      setViewState(newViewState)
-
-      // Save view state before refresh
-      sessionStorage.setItem('mapViewState', JSON.stringify(newViewState))
 
       setTravelAnimation({
         startLat,
@@ -218,6 +249,17 @@ export default function WeddingMap({
 
       const data = await response.json()
 
+      // Update user preferences state locally - this will cause meeples to re-render
+      if (currentUserEmail) {
+        setUserPreferences(prevPrefs =>
+          prevPrefs.map(pref =>
+            pref.email === currentUserEmail
+              ? { ...pref, current_location_id: table.id }
+              : pref
+          )
+        )
+      }
+
       // Show travel animation if there's a previous location
       if (data.previousLocation) {
         const prevLat = Number(data.previousLocation.latitude)
@@ -225,40 +267,13 @@ export default function WeddingMap({
         const newLat = Number(data.newLocation.latitude)
         const newLon = Number(data.newLocation.longitude)
 
-        // Calculate bounds to show both locations
-        const minLat = Math.min(prevLat, newLat)
-        const maxLat = Math.max(prevLat, newLat)
-        const minLon = Math.min(prevLon, newLon)
-        const maxLon = Math.max(prevLon, newLon)
+        // Calculate optimal view - only changes if needed
+        const optimalView = calculateOptimalView(prevLat, prevLon, newLat, newLon, viewState)
 
-        const centerLat = (minLat + maxLat) / 2
-        const centerLon = (minLon + maxLon) / 2
-
-        const latDiff = maxLat - minLat
-        const lonDiff = maxLon - minLon
-        const maxDiff = Math.max(latDiff, lonDiff)
-        const paddedDiff = maxDiff * 1.3
-
-        let zoom
-        if (paddedDiff < 0.001) zoom = 16
-        else if (paddedDiff < 0.003) zoom = 15
-        else if (paddedDiff < 0.008) zoom = 14
-        else if (paddedDiff < 0.02) zoom = 13
-        else if (paddedDiff < 0.05) zoom = 12
-        else if (paddedDiff < 0.15) zoom = 11
-        else if (paddedDiff < 0.5) zoom = 9
-        else if (paddedDiff < 2) zoom = 7
-        else if (paddedDiff < 5) zoom = 6
-        else if (paddedDiff < 15) zoom = 5
-        else if (paddedDiff < 40) zoom = 4
-        else if (paddedDiff < 90) zoom = 3
-        else zoom = 2
-
-        setViewState({
-          latitude: centerLat,
-          longitude: centerLon,
-          zoom: zoom,
-        })
+        if (optimalView) {
+          // Only update view if both points aren't already visible
+          setViewState(optimalView)
+        }
 
         setTravelAnimation({
           startLat: prevLat,
@@ -269,11 +284,6 @@ export default function WeddingMap({
           newCheckinId: `visit-${Date.now()}`,
         })
       }
-
-      // Refresh the page to update the meeple positions
-      setTimeout(() => {
-        window.location.reload()
-      }, 2000)
     } catch (error) {
       console.error('Visit error:', error)
       alert('Failed to visit location')
@@ -363,6 +373,7 @@ export default function WeddingMap({
         touchPitch={false}
         dragRotate={false}
         keyboard={false}
+        transitionDuration={1000}
       >
         {/* Show table icon markers (always visible) */}
         {tablesWithCheckins.map((table) => {
