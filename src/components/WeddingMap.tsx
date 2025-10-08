@@ -327,15 +327,18 @@ export default function WeddingMap({
                     borderColor: borderColor
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/table-icons/${table.unique_code}.png`}
-                    alt={table.name}
-                    className="w-full h-full object-contain"
+                  <div
+                    className="w-full h-full"
                     style={{
-                      filter: isRuleOfThirds
-                        ? 'brightness(0) invert(1) sepia(0.2) saturate(0.3) brightness(1.1)' // Cream colored icons on burgundy
-                        : 'brightness(0.3) sepia(1) saturate(5) hue-rotate(345deg) brightness(0.8)' // Burgundy colored icons on cream
+                      backgroundColor: isRuleOfThirds ? '#F5E6D3' : '#7B2D26',
+                      WebkitMaskImage: `url(/table-icons/${table.unique_code}.png)`,
+                      maskImage: `url(/table-icons/${table.unique_code}.png)`,
+                      WebkitMaskSize: 'contain',
+                      maskSize: 'contain',
+                      WebkitMaskRepeat: 'no-repeat',
+                      maskRepeat: 'no-repeat',
+                      WebkitMaskPosition: 'center',
+                      maskPosition: 'center'
                     }}
                   />
                 </div>
