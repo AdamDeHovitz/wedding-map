@@ -39,8 +39,6 @@ export function TravelAnimation({
   // Calculate distance and transport mode
   const distance = calculateDistance(startLat, startLon, endLat, endLon)
   const mode = getTransportMode(distance)
-  const duration = getAnimationDuration(distance, mode)
-  const icon = getTransportIcon(mode)
 
   // Fetch path data asynchronously
   useEffect(() => {
@@ -60,6 +58,11 @@ export function TravelAnimation({
       isMounted = false
     }
   }, [startLon, startLat, endLon, endLat, mode])
+
+  // Use actual mode from path data if available (may differ due to fallback)
+  const actualMode = pathData?.actualMode || mode
+  const duration = getAnimationDuration(distance, actualMode)
+  const icon = getTransportIcon(actualMode)
 
   useEffect(() => {
     // Don't start animation until path is loaded
@@ -114,7 +117,7 @@ export function TravelAnimation({
   }
 
   // Get default color based on transport mode (fallback if no segments)
-  const defaultColor = mode === 'bike' ? '#3b82f6' : mode === 'train' ? '#8b5cf6' : '#f59e0b'
+  const defaultColor = actualMode === 'bike' ? '#3b82f6' : actualMode === 'train' ? '#8b5cf6' : '#f59e0b'
 
   // If we have transit segments, render each one with its own color
   const hasSegments = pathData.segments && pathData.segments.length > 0

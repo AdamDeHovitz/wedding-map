@@ -38,15 +38,16 @@ describe('getTransportMode', () => {
     expect(getTransportMode(2.9)).toBe('bike')
   })
 
-  it('returns train for distances between 3 and 15 miles', () => {
+  it('returns train for distances between 3 and 1000 miles', () => {
     expect(getTransportMode(3)).toBe('train')
     expect(getTransportMode(10)).toBe('train')
-    expect(getTransportMode(14.9)).toBe('train')
+    expect(getTransportMode(100)).toBe('train')
+    expect(getTransportMode(999)).toBe('train')
+    expect(getTransportMode(1000)).toBe('train')
   })
 
-  it('returns plane for distances over 15 miles', () => {
-    expect(getTransportMode(15)).toBe('plane')
-    expect(getTransportMode(100)).toBe('plane')
+  it('returns plane for distances over 1000 miles', () => {
+    expect(getTransportMode(1001)).toBe('plane')
     expect(getTransportMode(2500)).toBe('plane')
   })
 })

@@ -31,19 +31,21 @@ function toRad(degrees: number): number {
 
 export type TransportMode = 'bike' | 'train' | 'plane'
 
+const MAX_TRANSIT_DISTANCE = 1000 // miles
+
 /**
  * Determine transport mode based on distance
  * < 3 miles: bike
- * 3-15 miles: train
- * > 15 miles: plane
+ * 3-1000 miles: train (will try transit, fallback to plane if unavailable)
+ * > 1000 miles: plane (too far for realistic transit)
  */
 export function getTransportMode(distanceMiles: number): TransportMode {
   if (distanceMiles < 3) {
     return 'bike'
-  } else if (distanceMiles < 15) {
-    return 'train'
+  } else if (distanceMiles <= MAX_TRANSIT_DISTANCE) {
+    return 'train' // Will attempt transit route
   } else {
-    return 'plane'
+    return 'plane' // Too far for transit
   }
 }
 
@@ -191,13 +193,15 @@ function decodePolyline(encoded: string): [number, number][] {
 export interface PathData {
   coordinates: [number, number][]
   segments?: RouteSegment[] // For transit routes with multiple colored segments
+  actualMode?: TransportMode // The actual mode used (may differ from requested if fallback occurred)
 }
 
 /**
  * Generate intermediate points along a path for animation
  * For bike, fetches real routes from Mapbox
  * For train, fetches real transit routes from Google Maps with colored segments
- * Returns coordinates and optional segments for multi-colored routes
+ * If transit fails, falls back to plane mode
+ * Returns coordinates, optional segments, and actual mode used
  */
 export async function generatePathPoints(
   startLon: number,
@@ -207,6 +211,8 @@ export async function generatePathPoints(
   mode: TransportMode,
   numPoints: number = 100 // For resampling the route
 ): Promise<PathData> {
+  const distance = calculateDistance(startLat, startLon, endLat, endLon)
+
   // For bike, fetch real cycling route from Mapbox
   if (mode === 'bike') {
     const routeCoords = await fetchMapboxRoute(startLon, startLat, endLon, endLat, 'cycling')
@@ -214,12 +220,19 @@ export async function generatePathPoints(
     if (routeCoords && routeCoords.length > 0) {
       // Resample the route to get consistent number of points for smooth animation
       return {
-        coordinates: resamplePath(routeCoords, numPoints)
+        coordinates: resamplePath(routeCoords, numPoints),
+        actualMode: 'bike'
       }
+    }
+
+    // Fallback to simple path if cycling route fetch fails
+    return {
+      coordinates: generateSimplePath(startLon, startLat, endLon, endLat, numPoints, distance * 0.005),
+      actualMode: 'bike'
     }
   }
 
-  // For train, fetch real transit route from Google Maps
+  // For train, always try transit route from Google Maps first
   if (mode === 'train') {
     const segments = await fetchGoogleTransitRoute(startLat, startLon, endLat, endLon)
 
@@ -229,51 +242,90 @@ export async function generatePathPoints(
 
       return {
         coordinates: resamplePath(allCoords, numPoints),
-        segments: segments // Keep original segments for rendering colored lines
+        segments: segments, // Keep original segments for rendering colored lines
+        actualMode: 'train'
       }
     }
+
+    // Transit route failed - fall back to plane mode
+    console.log('Transit route unavailable, falling back to plane')
+    return {
+      coordinates: generatePlanePath(startLon, startLat, endLon, endLat, numPoints, distance),
+      actualMode: 'plane' // Changed mode due to fallback
+    }
   }
 
-  // Fallback to arc-based path for plane or if API fetch fails
-  const points: [number, number][] = []
-
+  // For plane, create an arc (great circle approximation)
   if (mode === 'plane') {
-    // For plane, create an arc (great circle approximation)
-    const midLon = (startLon + endLon) / 2
-    const midLat = (startLat + endLat) / 2
-    const distance = calculateDistance(startLat, startLon, endLat, endLon)
-
-    // Arc height: higher for longer distances
-    const arcHeight = Math.min(distance * 0.08, 15)
-
-    for (let i = 0; i <= numPoints; i++) {
-      const t = i / numPoints
-
-      // Quadratic bezier curve
-      const lon = (1 - t) * (1 - t) * startLon + 2 * (1 - t) * t * midLon + t * t * endLon
-      const lat = (1 - t) * (1 - t) * startLat + 2 * (1 - t) * t * (midLat + arcHeight) + t * t * endLat
-
-      points.push([lon, lat])
-    }
-  } else {
-    // Fallback for bike/train if API fetch fails
-    const midLon = (startLon + endLon) / 2
-    const midLat = (startLat + endLat) / 2
-    const distance = calculateDistance(startLat, startLon, endLat, endLon)
-
-    const arcHeight = mode === 'train' ? distance * 0.01 : distance * 0.005
-
-    for (let i = 0; i <= numPoints; i++) {
-      const t = i / numPoints
-
-      const lon = (1 - t) * (1 - t) * startLon + 2 * (1 - t) * t * midLon + t * t * endLon
-      const lat = (1 - t) * (1 - t) * startLat + 2 * (1 - t) * t * (midLat + arcHeight) + t * t * endLat
-
-      points.push([lon, lat])
+    return {
+      coordinates: generatePlanePath(startLon, startLat, endLon, endLat, numPoints, distance),
+      actualMode: 'plane'
     }
   }
 
-  return { coordinates: points }
+  // Default fallback
+  return {
+    coordinates: generateSimplePath(startLon, startLat, endLon, endLat, numPoints, distance * 0.01),
+    actualMode: mode
+  }
+}
+
+/**
+ * Generate a plane arc path
+ */
+function generatePlanePath(
+  startLon: number,
+  startLat: number,
+  endLon: number,
+  endLat: number,
+  numPoints: number,
+  distance: number
+): [number, number][] {
+  const points: [number, number][] = []
+  const midLon = (startLon + endLon) / 2
+  const midLat = (startLat + endLat) / 2
+
+  // Arc height: higher for longer distances
+  const arcHeight = Math.min(distance * 0.08, 15)
+
+  for (let i = 0; i <= numPoints; i++) {
+    const t = i / numPoints
+
+    // Quadratic bezier curve
+    const lon = (1 - t) * (1 - t) * startLon + 2 * (1 - t) * t * midLon + t * t * endLon
+    const lat = (1 - t) * (1 - t) * startLat + 2 * (1 - t) * t * (midLat + arcHeight) + t * t * endLat
+
+    points.push([lon, lat])
+  }
+
+  return points
+}
+
+/**
+ * Generate a simple curved path (for bike/train fallback)
+ */
+function generateSimplePath(
+  startLon: number,
+  startLat: number,
+  endLon: number,
+  endLat: number,
+  numPoints: number,
+  arcHeight: number
+): [number, number][] {
+  const points: [number, number][] = []
+  const midLon = (startLon + endLon) / 2
+  const midLat = (startLat + endLat) / 2
+
+  for (let i = 0; i <= numPoints; i++) {
+    const t = i / numPoints
+
+    const lon = (1 - t) * (1 - t) * startLon + 2 * (1 - t) * t * midLon + t * t * endLon
+    const lat = (1 - t) * (1 - t) * startLat + 2 * (1 - t) * t * (midLat + arcHeight) + t * t * endLat
+
+    points.push([lon, lat])
+  }
+
+  return points
 }
 
 /**
