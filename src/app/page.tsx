@@ -1,7 +1,12 @@
 import { supabase } from '@/lib/supabase'
 import WeddingMap from '@/components/WeddingMap'
+import { WeddingTable } from '@/types/database'
+import { auth } from '@/auth'
 
 export default async function Home() {
+  // Get current user session
+  const session = await auth()
+
   // Fetch all wedding tables
   const { data: tables } = await supabase
     .from('wedding_tables')
@@ -9,7 +14,7 @@ export default async function Home() {
     .order('name')
 
   // Fetch all check-ins
-  const { data: checkins } = await supabase
+  let { data: checkins } = await supabase
     .from('guest_checkins')
     .select('*')
     .order('checked_in_at', { ascending: false })
@@ -18,6 +23,48 @@ export default async function Home() {
   const { data: userPreferences } = await supabase
     .from('user_preferences')
     .select('*')
+
+  // Add hardcoded Rule of Thirds venue
+  const ruleOfThirdsVenue: WeddingTable = {
+    id: 'rule-of-thirds',
+    name: 'Rule of Thirds',
+    address: '171 Banker St, Brooklyn, NY 11222',
+    unique_code: 'rule-of-thirds',
+    latitude: 40.7292,
+    longitude: -73.9586,
+    created_at: new Date().toISOString()
+  }
+
+  // Auto check-in logged in users to Rule of Thirds venue
+  if (session?.user?.email && session?.user?.name) {
+    const userEmail = session.user.email
+    const userName = session.user.name
+
+    const existingCheckin = checkins?.find(
+      c => c.guest_email === userEmail && c.table_id === 'rule-of-thirds'
+    )
+
+    if (!existingCheckin) {
+      await supabase.from('guest_checkins').insert({
+        table_id: 'rule-of-thirds',
+        guest_email: userEmail,
+        guest_name: userName,
+        message: 'Welcome to our wedding!'
+      })
+
+      // Re-fetch checkins to include the new one
+      const { data: updatedCheckins } = await supabase
+        .from('guest_checkins')
+        .select('*')
+        .order('checked_in_at', { ascending: false })
+
+      if (updatedCheckins) {
+        checkins = updatedCheckins
+      }
+    }
+  }
+
+  const allTables = [...(tables || []), ruleOfThirdsVenue]
 
   return (
     <div className="relative">
@@ -28,9 +75,10 @@ export default async function Home() {
       </div>
 
       <WeddingMap
-        tables={tables || []}
+        tables={allTables}
         checkins={checkins || []}
         userPreferences={userPreferences || []}
+        currentUserEmail={session?.user?.email || null}
       />
     </div>
   )
