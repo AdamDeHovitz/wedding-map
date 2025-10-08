@@ -211,4 +211,29 @@
       transform: translateY(-8px) translateX(-50%);
     }
   }
+
+  /* Make Mapbox popup close button larger for mobile */
+  .mapboxgl-popup-close-button {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 28px !important;
+    line-height: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #333 !important;
+    font-weight: bold !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .mapboxgl-popup-close-button:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    color: #000 !important;
+    transform: scale(1.1) !important;
+  }
+
+  .mapboxgl-popup-close-button:active {
+    transform: scale(0.95) !important;
+  }
 }

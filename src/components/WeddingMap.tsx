@@ -9,6 +9,7 @@ import { Meeple } from '@/components/Meeple'
 import { CheckinDialog } from '@/components/CheckinDialog'
 import { TravelAnimation } from '@/components/TravelAnimation'
 import { Button } from '@/components/ui/button'
+import { SeatingChart } from '@/components/SeatingChart'
 
 interface WeddingMapProps {
   tables: WeddingTable[]
@@ -16,6 +17,7 @@ interface WeddingMapProps {
   userPreferences: UserPreferences[]
   initialTable?: WeddingTable | null
   showCheckinDialog?: boolean
+  currentUserEmail?: string | null
 }
 
 interface TableWithCheckins extends WeddingTable {
@@ -27,7 +29,8 @@ export default function WeddingMap({
   checkins,
   userPreferences,
   initialTable = null,
-  showCheckinDialog = false
+  showCheckinDialog = false,
+  currentUserEmail = null
 }: WeddingMapProps) {
   const [selectedTable, setSelectedTable] = useState<TableWithCheckins | null>(null)
   const [selectedMeeple, setSelectedMeeple] = useState<GuestCheckin | null>(null)
@@ -281,7 +284,12 @@ export default function WeddingMap({
             anchor="bottom"
             onClick={e => {
               e.originalEvent.stopPropagation()
-              setSelectedTable(table)
+              // Toggle: close if already selected, open if not
+              if (selectedTable?.id === table.id) {
+                setSelectedTable(null)
+              } else {
+                setSelectedTable(table)
+              }
             }}
           >
             <div className="relative cursor-pointer group active:scale-95 transition-all duration-300 animate-fadeIn">
@@ -330,7 +338,12 @@ export default function WeddingMap({
                 anchor="center"
                 onClick={e => {
                   e.originalEvent.stopPropagation()
-                  setSelectedMeeple(checkin)
+                  // Toggle: close if already selected, open if not
+                  if (selectedMeeple?.id === checkin.id) {
+                    setSelectedMeeple(null)
+                  } else {
+                    setSelectedMeeple(checkin)
+                  }
                 }}
               >
                 <div className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'}`}>
@@ -354,51 +367,60 @@ export default function WeddingMap({
             onClose={() => setSelectedTable(null)}
             closeButton={true}
             closeOnClick={false}
-            className="max-w-sm"
+            className={selectedTable.id === 'rule-of-thirds' ? 'max-w-2xl' : 'max-w-sm'}
           >
-            <Card className="border-0 shadow-none">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
-                <p className="text-sm text-gray-600">{selectedTable.address}</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-700">
-                      {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} visited
-                    </p>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setCheckinTable(selectedTable)
-                        setCheckinDialogOpen(true)
-                        setSelectedTable(null)
-                      }}
-                    >
-                      Check In
-                    </Button>
-                  </div>
-
-                  {selectedTable.checkins.length > 0 && (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {selectedTable.checkins.map((checkin) => (
-                        <div key={checkin.id} className="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                          <div className="flex-shrink-0">
-                            <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900">{checkin.guest_name}</p>
-                            {checkin.message && (
-                              <p className="text-xs text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+            {selectedTable.id === 'rule-of-thirds' ? (
+              // Special popup for Rule of Thirds venue with seating chart
+              <SeatingChart
+                tables={tables}
+                userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
+              />
+            ) : (
+              // Regular popup for other tables
+              <Card className="border-0 shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
+                  <p className="text-sm text-gray-600">{selectedTable.address}</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-700">
+                        {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} visited
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setCheckinTable(selectedTable)
+                          setCheckinDialogOpen(true)
+                          setSelectedTable(null)
+                        }}
+                      >
+                        Check In
+                      </Button>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {selectedTable.checkins.length > 0 && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {selectedTable.checkins.map((checkin) => (
+                          <div key={checkin.id} className="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <div className="flex-shrink-0">
+                              <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">{checkin.guest_name}</p>
+                              {checkin.message && (
+                                <p className="text-xs text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </Popup>
         )}
 
