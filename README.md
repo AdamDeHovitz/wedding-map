@@ -1,3 +1,5 @@
+Hosted at https://wedding-map-six.vercel.app/
+
 # Wedding Map
 
 An interactive wedding guest map where guests can check in at special locations and leave messages.
