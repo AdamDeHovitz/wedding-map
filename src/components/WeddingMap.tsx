@@ -373,7 +373,6 @@ export default function WeddingMap({
         touchPitch={false}
         dragRotate={false}
         keyboard={false}
-        transitionDuration={1000}
       >
         {/* Show table icon markers (always visible) */}
         {tablesWithCheckins.map((table) => {
