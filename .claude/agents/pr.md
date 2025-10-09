@@ -20,6 +20,7 @@ This is a wedding guest map application. All code changes should go through pull
    - Add test plan
    - Link related issues
    - Use appropriate labels
+   - *IMPORTANT* ALWAYS RUN THE LINTER BEFORE PUSHING A PR
 
 2. **PR Management**
    - View PR details
