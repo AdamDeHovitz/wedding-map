@@ -552,33 +552,9 @@ export default function WeddingMap({
                     </div>
 
                     {selectedTable.checkins.length > 0 && (
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {selectedTable.checkins.map((checkin) => {
-                          const isCurrentlyHere = isUserCurrentlyAtLocation(checkin.guest_email, selectedTable.id)
-                          return (
-                            <div
-                              key={checkin.id}
-                              className={`flex items-start gap-2 p-2 bg-gray-50 rounded ${!isCurrentlyHere ? 'opacity-60' : ''}`}
-                            >
-                              <div
-                                className="flex-shrink-0"
-                                style={!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined}
-                              >
-                                <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900">
-                                  {checkin.guest_name}
-                                  {!isCurrentlyHere && <span className="text-xs text-gray-400 ml-1">(away)</span>}
-                                </p>
-                                {checkin.message && (
-                                  <p className="text-xs text-gray-600 italic mt-1">&quot;{checkin.message}&quot;</p>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
+                      <p className="text-sm text-gray-600 italic">
+                        Zoom in and click on meeples to see messages and who&apos;s here!
+                      </p>
                     )}
                   </div>
                 </CardContent>
