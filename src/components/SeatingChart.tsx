@@ -6,9 +6,10 @@ import { Card } from '@/components/ui/card'
 interface SeatingChartProps {
   tables: WeddingTable[]
   userCheckins: GuestCheckin[]
+  onTableClick?: (tableName: string) => void
 }
 
-export function SeatingChart({ tables, userCheckins }: SeatingChartProps) {
+export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChartProps) {
   // Create a set of table IDs the user has visited
   const visitedTableIds = new Set(userCheckins.map(c => c.table_id))
 
@@ -38,6 +39,7 @@ export function SeatingChart({ tables, userCheckins }: SeatingChartProps) {
           ${className}
         `}
         title={`${name}${visited ? ' ✓ Visited' : ''}`}
+        onClick={() => onTableClick?.(name)}
       >
         <span className={`${isSweetheart ? 'text-xs' : 'text-[11px]'} font-semibold leading-tight`}>
           {name}
