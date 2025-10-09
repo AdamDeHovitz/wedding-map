@@ -232,6 +232,32 @@ export default function WeddingMap({
     }
   }
 
+  // Handle seating chart table click - navigate to table location
+  const handleSeatingChartTableClick = (tableName: string) => {
+    // Find the table by name
+    const table = tables.find(t => t.name === tableName)
+    if (!table) return
+
+    // Close the Rule of Thirds popup
+    setSelectedTable(null)
+
+    // Navigate to the table's location with zoom level 16
+    setViewState({
+      ...viewState,
+      longitude: Number(table.longitude),
+      latitude: Number(table.latitude),
+      zoom: 16
+    })
+
+    // After a small delay, open that table's popup
+    setTimeout(() => {
+      const tableWithCheckins = tablesWithCheckins.find(t => t.id === table.id)
+      if (tableWithCheckins) {
+        setSelectedTable(tableWithCheckins)
+      }
+    }, 500)
+  }
+
   // Handle successful visit with animation
   const handleVisit = async (table: WeddingTable) => {
     try {
@@ -513,6 +539,7 @@ export default function WeddingMap({
               <SeatingChart
                 tables={tables}
                 userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
+                onTableClick={handleSeatingChartTableClick}
               />
             ) : (
               // Regular popup for other tables
