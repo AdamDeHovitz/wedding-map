@@ -393,6 +393,19 @@ export default function WeddingMap({
                   setSelectedTable(null)
                 } else {
                   setSelectedTable(table)
+
+                  // Auto-zoom to see meeples if zoom level is too low
+                  const MIN_MEEPLE_ZOOM = 15
+                  const TARGET_ZOOM = 16
+
+                  if (viewState.zoom < MIN_MEEPLE_ZOOM) {
+                    setViewState({
+                      ...viewState,
+                      longitude: Number(table.longitude),
+                      latitude: Number(table.latitude),
+                      zoom: TARGET_ZOOM
+                    })
+                  }
                 }
               }}
             >
