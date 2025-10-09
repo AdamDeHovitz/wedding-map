@@ -5,3 +5,10 @@ at the real life tables that allow them to check in at that location on the webs
 
 While developing this site it is important to write clean, reusable code and to make sure we pass linter
 rules. Also please conform with the style guide in STYLE.md and that tests still pass
+
+Read DESIGN-GUIDE.md and STYLING_UPDATE.md for more design info
+
+Read README.md for project info
+
+Read SETUP.md for setup info
+
