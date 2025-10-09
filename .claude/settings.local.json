@@ -14,7 +14,10 @@
       "Bash(gh pr merge:*)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue comment:*)"
     ],
     "deny": [],
     "ask": []
