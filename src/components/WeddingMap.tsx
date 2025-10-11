@@ -568,8 +568,8 @@ export default function WeddingMap({
                     className="w-full h-full"
                     style={{
                       backgroundColor: isRuleOfThirds ? '#F5E6D3' : '#7B2D26',
-                      WebkitMaskImage: `url(/table-icons/${table.unique_code}.png)`,
-                      maskImage: `url(/table-icons/${table.unique_code}.png)`,
+                      WebkitMaskImage: `url(/table-icons/${table.icon_filename || table.unique_code}.png)`,
+                      maskImage: `url(/table-icons/${table.icon_filename || table.unique_code}.png)`,
                       WebkitMaskSize: 'contain',
                       maskSize: 'contain',
                       WebkitMaskRepeat: 'no-repeat',

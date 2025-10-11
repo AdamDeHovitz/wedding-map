@@ -14,6 +14,7 @@ export default function AddTableForm() {
     uniqueCode: '',
     latitude: '',
     longitude: '',
+    iconFilename: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,6 +33,7 @@ export default function AddTableForm() {
           unique_code: formData.uniqueCode,
           latitude: parseFloat(formData.latitude),
           longitude: parseFloat(formData.longitude),
+          icon_filename: formData.iconFilename || null,
         })
 
       if (insertError) {
@@ -107,6 +109,21 @@ export default function AddTableForm() {
         </div>
         <p className="text-xs text-gray-500 mt-1">
           This will be used in the URL: /checkin/{formData.uniqueCode || 'your-code'}
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="iconFilename" className="block text-sm font-medium text-gray-700 mb-1">
+          Icon Filename (optional)
+        </label>
+        <Input
+          id="iconFilename"
+          placeholder="e.g., brooklyn-bridge (without .png)"
+          value={formData.iconFilename}
+          onChange={(e) => setFormData({ ...formData, iconFilename: e.target.value })}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Icon file should exist in /public/table-icons/ as {formData.iconFilename || 'filename'}.png
         </p>
       </div>
 
