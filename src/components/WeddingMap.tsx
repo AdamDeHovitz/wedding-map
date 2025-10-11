@@ -670,8 +670,8 @@ export default function WeddingMap({
           })
         })}
 
-        {/* Popup when a table is selected */}
-        {selectedTable && (
+        {/* Popup when a table is selected (excluding Rule of Thirds) */}
+        {selectedTable && selectedTable.id !== 'rule-of-thirds' && (
           <Popup
             longitude={Number(selectedTable.longitude)}
             latitude={Number(selectedTable.latitude)}
@@ -679,73 +679,63 @@ export default function WeddingMap({
             onClose={() => setSelectedTable(null)}
             closeButton={true}
             closeOnClick={false}
-            className={selectedTable.id === 'rule-of-thirds' ? 'max-w-2xl' : 'max-w-sm'}
+            className="max-w-sm"
           >
-            {selectedTable.id === 'rule-of-thirds' ? (
-              // Special popup for Rule of Thirds venue with seating chart
-              <SeatingChart
-                tables={tables}
-                userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
-                onTableClick={handleSeatingChartTableClick}
-              />
-            ) : (
-              // Regular popup for other tables
-              <Card className="border-0 shadow-none">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
-                  <p className="text-sm text-gray-600">{selectedTable.address}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-700">
-                        {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} here
-                      </p>
-                      {(() => {
-                        // Check if current user has checked in to this location before
-                        const hasCheckedIn = currentUserEmail && checkins.some(
-                          c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+            <Card className="border-0 shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
+                <p className="text-sm text-gray-600">{selectedTable.address}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-700">
+                      {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} here
+                    </p>
+                    {(() => {
+                      // Check if current user has checked in to this location before
+                      const hasCheckedIn = currentUserEmail && checkins.some(
+                        c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+                      )
+
+                      if (hasCheckedIn) {
+                        return (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              handleVisit(selectedTable)
+                              setSelectedTable(null)
+                            }}
+                          >
+                            Visit
+                          </Button>
                         )
-
-                        if (hasCheckedIn) {
-                          return (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                handleVisit(selectedTable)
-                                setSelectedTable(null)
-                              }}
-                            >
-                              Visit
-                            </Button>
-                          )
-                        } else {
-                          return (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setCheckinTable(selectedTable)
-                                setCheckinDialogOpen(true)
-                                setSelectedTable(null)
-                              }}
-                            >
-                              Check In
-                            </Button>
-                          )
-                        }
-                      })()}
-                    </div>
-
-                    {selectedTable.checkins.length > 0 && (
-                      <p className="text-sm text-gray-600 italic">
-                        Zoom in and click on meeples to see messages and who&apos;s here!
-                      </p>
-                    )}
+                      } else {
+                        return (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setCheckinTable(selectedTable)
+                              setCheckinDialogOpen(true)
+                              setSelectedTable(null)
+                            }}
+                          >
+                            Check In
+                          </Button>
+                        )
+                      }
+                    })()}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+
+                  {selectedTable.checkins.length > 0 && (
+                    <p className="text-sm text-gray-600 italic">
+                      Zoom in and click on meeples to see messages and who&apos;s here!
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </Popup>
         )}
 
@@ -793,6 +783,34 @@ export default function WeddingMap({
         requireCode={!initialTable}
         onCheckinSuccess={handleCheckinSuccess}
       />
+
+      {/* Full-screen seating chart overlay for Rule of Thirds venue */}
+      {selectedTable && selectedTable.id === 'rule-of-thirds' && (
+        <div className="fixed inset-0 z-50 bg-gradient-to-br from-rose-50/25 to-white/25 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <button
+            onClick={() => setSelectedTable(null)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#7B2D26] hover:bg-[#7B2D26] hover:text-white transition-colors z-10"
+            aria-label="Close seating chart"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="w-full max-w-3xl">
+            <SeatingChart
+              tables={tables}
+              userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
+              onTableClick={handleSeatingChartTableClick}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
