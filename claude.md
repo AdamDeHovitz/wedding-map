@@ -12,3 +12,13 @@ Read README.md for project info
 
 Read SETUP.md for setup info
 
+## User Experience Consistency
+
+**CRITICAL**: The user experience must be consistent across all entry points to the site.
+
+- The main page (`src/app/page.tsx`) and check-in page (`src/app/checkin/[code]/page.tsx`) must provide the same experience and functionality
+- Both pages should have identical headers with the same navigation elements (settings button, etc.)
+- Both pages should display the same venues (including the hardcoded Rule of Thirds venue)
+- Users should have access to the same features regardless of how they arrive at the site
+- When making changes to one page, always check if the same changes need to be applied to the other page to maintain consistency
+
