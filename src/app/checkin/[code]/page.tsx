@@ -41,9 +41,9 @@ export default async function CheckinPage({ params }: CheckinPageProps) {
 
   return (
     <div className="relative">
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 w-full max-w-md">
-        <div className="bg-white/90 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg">
-          <h1 className="text-lg sm:text-xl font-bold text-gray-900 text-center">{table.name}</h1>
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] px-4 w-full max-w-md pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 rounded-full shadow-lg pointer-events-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#7B2D26] text-center">{table.name}</h1>
         </div>
       </div>
 
