@@ -752,7 +752,7 @@ export default function WeddingMap({
 
                     {selectedTable.checkins.length > 0 && (
                       <p className="text-sm text-gray-600 italic">
-                        Zoom in and click on meeples to see messages and who&apos;s here!
+                        Click on meeples to see what other guests have said!
                       </p>
                     )}
                   </div>
