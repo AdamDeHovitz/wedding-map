@@ -38,6 +38,7 @@ export default async function Home() {
     unique_code: 'rule-of-thirds',
     latitude: 40.7292,
     longitude: -73.9586,
+    icon_filename: 'rule-of-thirds',
     created_at: new Date().toISOString()
   }
 
