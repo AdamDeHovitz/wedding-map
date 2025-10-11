@@ -47,8 +47,13 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
 
     if (!table) return
 
-    // Verify the code matches the table's unique code
-    if (code.toLowerCase().trim() === table.unique_code.toLowerCase()) {
+    // Verify the code matches the table's unique code OR is the admin code
+    const enteredCode = code.toLowerCase().trim()
+    const isValidCode =
+      enteredCode === table.unique_code.toLowerCase() ||
+      enteredCode === 'admin'
+
+    if (isValidCode) {
       setStep('message')
     } else {
       setCodeError('Invalid code. Please try again.')
