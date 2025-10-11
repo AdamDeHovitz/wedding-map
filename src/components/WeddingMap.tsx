@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Map as MapGL, Marker, Popup } from 'react-map-gl/mapbox'
+import { Map as MapGL, Marker, Popup, Layer } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -53,7 +53,9 @@ export default function WeddingMap({
   const [viewState, setViewState] = useState({
     longitude: initialTable ? Number(initialTable.longitude) : -74.0,
     latitude: initialTable ? Number(initialTable.latitude) : 40.7,
-    zoom: initialTable ? 15 : 4 // Zoom in if showing initial table
+    zoom: initialTable ? 15 : 4, // Zoom in if showing initial table
+    pitch: 45, // Tilt angle for 3D effect (0-85 degrees)
+    bearing: 0 // Rotation angle (0-360 degrees)
   })
 
   // Threshold for switching between table icons and individual meeples
@@ -142,6 +144,7 @@ export default function WeddingMap({
     else zoom = 2                            // Cross-continental
 
     return {
+      ...currentViewState,
       latitude: centerLat,
       longitude: centerLon,
       zoom: zoom,
@@ -413,6 +416,8 @@ export default function WeddingMap({
         latitude: avgLat,
         longitude: avgLon,
         zoom: zoom,
+        pitch: 45,
+        bearing: 0,
       })
     }
 
@@ -458,10 +463,41 @@ export default function WeddingMap({
         mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         touchZoomRotate={true}
-        touchPitch={false}
-        dragRotate={false}
+        touchPitch={true}
+        dragRotate={true}
         keyboard={false}
       >
+        {/* 3D Buildings Layer */}
+        <Layer
+          id="3d-buildings"
+          type="fill-extrusion"
+          source="composite"
+          source-layer="building"
+          filter={['==', 'extrude', 'true']}
+          paint={{
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15,
+              0,
+              15.05,
+              ['get', 'height']
+            ],
+            'fill-extrusion-base': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15,
+              0,
+              15.05,
+              ['get', 'min_height']
+            ],
+            'fill-extrusion-opacity': 0.6
+          }}
+        />
+
         {/* Show table icon markers (always visible) */}
         {tablesWithCheckins.map((table) => {
           const isRuleOfThirds = table.id === 'rule-of-thirds'

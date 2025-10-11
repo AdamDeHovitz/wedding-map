@@ -5,7 +5,8 @@
       "Bash(gh issue edit:*)",
       "Bash(npm test)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(git revert:*)"
     ],
     "deny": [],
     "ask": []
