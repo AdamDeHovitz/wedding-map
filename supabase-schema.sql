@@ -9,6 +9,7 @@ CREATE TABLE wedding_tables (
   unique_code TEXT UNIQUE NOT NULL, -- Short code for the URL (e.g., "table-1")
   latitude DECIMAL(10, 8) NOT NULL,
   longitude DECIMAL(11, 8) NOT NULL,
+  icon_filename TEXT, -- Optional: filename for table icon (without .png extension)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

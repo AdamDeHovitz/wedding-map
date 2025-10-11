@@ -18,6 +18,7 @@ export interface Database {
           latitude: number
           longitude: number
           created_at: string
+          icon_filename: string | null
         }
         Insert: {
           id?: string
@@ -27,6 +28,7 @@ export interface Database {
           latitude: number
           longitude: number
           created_at?: string
+          icon_filename?: string | null
         }
         Update: {
           id?: string
@@ -36,6 +38,7 @@ export interface Database {
           latitude?: number
           longitude?: number
           created_at?: string
+          icon_filename?: string | null
         }
       }
       user_preferences: {
