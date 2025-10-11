@@ -39,6 +39,10 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
   const [error, setError] = useState('')
   const [codeError, setCodeError] = useState('')
 
+  // Username login state
+  const [username, setUsername] = useState('')
+  const [usernameError, setUsernameError] = useState('')
+
   const handleCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setCodeError('')
@@ -108,6 +112,55 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     }
   }
 
+  /**
+   * Handle username-based sign-in
+   *
+   * IMPORTANT: Usernames are stored in the 'email' field in the database.
+   * This allows users without Gmail to participate. See src/auth.ts for details.
+   */
+  const handleUsernameSignIn = async () => {
+    setUsernameError('')
+
+    // Client-side validation (server validates too)
+    const trimmedUsername = username.trim()
+
+    if (!trimmedUsername) {
+      setUsernameError('Username is required')
+      return
+    }
+
+    if (trimmedUsername.includes('@')) {
+      setUsernameError('Username cannot contain @ symbol')
+      return
+    }
+
+    if (trimmedUsername.length < 3) {
+      setUsernameError('Username must be at least 3 characters')
+      return
+    }
+
+    if (trimmedUsername.length > 30) {
+      setUsernameError('Username must be 30 characters or less')
+      return
+    }
+
+    const validPattern = /^[a-zA-Z0-9_-]+$/
+    if (!validPattern.test(trimmedUsername)) {
+      setUsernameError('Username can only contain letters, numbers, underscores, and dashes')
+      return
+    }
+
+    try {
+      await signIn('credentials', {
+        username: trimmedUsername,
+        callbackUrl: window.location.href
+      })
+    } catch (err) {
+      setUsernameError('Sign in failed. Please try again.')
+      console.error('Username sign in error:', err)
+    }
+  }
+
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       // Reset state when closing
@@ -115,6 +168,8 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       setCode('')
       setCodeError('')
       setError('')
+      setUsername('')
+      setUsernameError('')
       setStep(requireCode ? 'code' : 'message')
     }
     onOpenChange(newOpen)
@@ -143,16 +198,60 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
           <DialogHeader>
             <DialogTitle className="text-2xl font-serif">Sign In to Check In</DialogTitle>
             <DialogDescription>
-              Sign in with your Google account to leave your mark at {table.name}
+              Sign in with Google or choose a username to leave your mark at {table.name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <Button
-              onClick={() => signIn('google')}
+              onClick={() => signIn('google', { callbackUrl: window.location.href })}
               className="w-full"
               size="lg"
             >
               Sign In with Google
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="username-dialog" className="text-sm font-medium">
+                Choose a Username
+              </label>
+              <Input
+                id="username-dialog"
+                type="text"
+                placeholder="your_username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUsernameSignIn()
+                  }
+                }}
+                className={usernameError ? 'border-red-500' : ''}
+              />
+              {usernameError && (
+                <p className="text-sm text-red-600">{usernameError}</p>
+              )}
+              <p className="text-xs text-gray-500">
+                3-30 characters. Letters, numbers, dashes, and underscores only. No @ symbol.
+              </p>
+            </div>
+
+            <Button
+              onClick={handleUsernameSignIn}
+              variant="outline"
+              className="w-full"
+              size="lg"
+              disabled={!username.trim()}
+            >
+              Continue as {username.trim() || 'username'}
             </Button>
           </div>
         </DialogContent>
