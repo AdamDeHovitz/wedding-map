@@ -11,6 +11,12 @@ import { CheckinDialog } from '@/components/CheckinDialog'
 import { TravelAnimation } from '@/components/TravelAnimation'
 import { Button } from '@/components/ui/button'
 import { SeatingChart } from '@/components/SeatingChart'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface WeddingMapProps {
   tables: WeddingTable[]
@@ -38,6 +44,7 @@ export default function WeddingMap({
   const [selectedMeeple, setSelectedMeeple] = useState<GuestCheckin | null>(null)
   const [checkinDialogOpen, setCheckinDialogOpen] = useState(showCheckinDialog)
   const [checkinTable, setCheckinTable] = useState<WeddingTable | null>(initialTable)
+  const [seatingChartOpen, setSeatingChartOpen] = useState(false)
   const [newMeepleIds, setNewMeepleIds] = useState<Set<string>>(new Set())
   const previousCheckinIds = useRef<Set<string>>(new Set())
   const [userPreferences, setUserPreferences] = useState<UserPreferences[]>(initialUserPreferences)
@@ -299,12 +306,20 @@ export default function WeddingMap({
 
   // Handle seating chart table click - navigate to table location
   const handleSeatingChartTableClick = (tableName: string) => {
-    // Find the table by name
-    const table = tables.find(t => t.name === tableName)
-    if (!table) return
+    // Find the table by name (case-insensitive, handle Ave vs Avenue)
+    const table = tables.find(t => {
+      const normalizedTableName = t.name.toLowerCase().replace(/\bavenue\b/g, 'ave')
+      const normalizedSearchName = tableName.toLowerCase().replace(/\bavenue\b/g, 'ave')
+      return normalizedTableName === normalizedSearchName
+    })
 
-    // Close the Rule of Thirds popup
-    setSelectedTable(null)
+    if (!table) {
+      console.warn(`Table "${tableName}" not found. Available tables:`, tables.map(t => t.name))
+      return
+    }
+
+    // Close the seating chart dialog
+    setSeatingChartOpen(false)
 
     // Navigate to the table's location with zoom level 16
     setViewState({
@@ -512,6 +527,13 @@ export default function WeddingMap({
               anchor="bottom"
               onClick={e => {
                 e.originalEvent.stopPropagation()
+
+                // Special handling for Rule of Thirds: open full-screen dialog
+                if (isRuleOfThirds) {
+                  setSeatingChartOpen(true)
+                  return
+                }
+
                 // Toggle: close if already selected, open if not
                 if (selectedTable?.id === table.id) {
                   setSelectedTable(null)
@@ -670,7 +692,7 @@ export default function WeddingMap({
           })
         })}
 
-        {/* Popup when a table is selected */}
+        {/* Popup when a table is selected (not Rule of Thirds) */}
         {selectedTable && (
           <Popup
             longitude={Number(selectedTable.longitude)}
@@ -679,18 +701,9 @@ export default function WeddingMap({
             onClose={() => setSelectedTable(null)}
             closeButton={true}
             closeOnClick={false}
-            className={selectedTable.id === 'rule-of-thirds' ? 'max-w-2xl' : 'max-w-sm'}
+            className="max-w-sm"
           >
-            {selectedTable.id === 'rule-of-thirds' ? (
-              // Special popup for Rule of Thirds venue with seating chart
-              <SeatingChart
-                tables={tables}
-                userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
-                onTableClick={handleSeatingChartTableClick}
-              />
-            ) : (
-              // Regular popup for other tables
-              <Card className="border-0 shadow-none">
+            <Card className="border-0 shadow-none">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
                   <p className="text-sm text-gray-600">{selectedTable.address}</p>
@@ -745,7 +758,6 @@ export default function WeddingMap({
                   </div>
                 </CardContent>
               </Card>
-            )}
           </Popup>
         )}
 
@@ -793,6 +805,24 @@ export default function WeddingMap({
         requireCode={!initialTable}
         onCheckinSuccess={handleCheckinSuccess}
       />
+
+      {/* Full-screen Seating Chart Dialog */}
+      <Dialog open={seatingChartOpen} onOpenChange={setSeatingChartOpen}>
+        <DialogContent className="max-w-full h-full sm:max-w-4xl sm:h-auto max-h-screen overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif text-center text-[#6B2D26]">
+              Rule of Thirds
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center py-4">
+            <SeatingChart
+              tables={tables}
+              userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
+              onTableClick={handleSeatingChartTableClick}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
