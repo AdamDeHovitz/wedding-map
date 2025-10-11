@@ -14,8 +14,15 @@ CREATE TABLE wedding_tables (
 
 -- Table: user_preferences
 -- Stores user settings (meeple color, display name, etc.) once per user
+--
+-- IMPORTANT: The 'email' field stores BOTH email addresses AND usernames
+-- - Google OAuth users: email = actual email address (e.g., "alice@gmail.com")
+-- - Username users: email = chosen username (e.g., "bob_smith")
+-- This design allows users without Gmail to participate via username login.
+-- Usernames are validated to NEVER contain '@' to prevent collision with emails.
+-- See src/auth.ts for validation logic.
 CREATE TABLE user_preferences (
-  email TEXT PRIMARY KEY, -- User's email from OAuth
+  email TEXT PRIMARY KEY, -- User's email OR username (see comment above)
   meeple_color TEXT NOT NULL, -- Color for the user's meeple (hex code)
   display_name TEXT, -- Optional: let users customize their display name
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -26,8 +33,8 @@ CREATE TABLE user_preferences (
 CREATE TABLE guest_checkins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   table_id UUID REFERENCES wedding_tables(id) ON DELETE CASCADE,
-  guest_email TEXT NOT NULL, -- From Google OAuth, references user_preferences
-  guest_name TEXT NOT NULL, -- From Google OAuth (or user_preferences.display_name)
+  guest_email TEXT NOT NULL, -- User's email OR username (references user_preferences.email)
+  guest_name TEXT NOT NULL, -- Display name (from Google OAuth or username)
   message TEXT, -- Optional message from guest
   checked_in_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(table_id, guest_email) -- Each guest can only check in once per table
