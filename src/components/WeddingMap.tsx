@@ -482,8 +482,56 @@ export default function WeddingMap({
         )}
 
         {/* Show individual meeple markers when zoomed in */}
-        {showMeeples && tablesWithCheckins.map((table) =>
-          table.checkins.map((checkin, index) => {
+        {showMeeples && tablesWithCheckins.map((table) => {
+          // Special handling for Rule of Thirds: show ALL users with accounts
+          if (table.id === 'rule-of-thirds') {
+            return userPreferences.map((userPref, index) => {
+              const position = getMeeplePosition(
+                Number(table.latitude),
+                Number(table.longitude),
+                index,
+                userPreferences.length
+              )
+              const isCurrentlyHere = isUserCurrentlyAtLocation(userPref.email, table.id)
+
+              // Find if this user has a checkin at this table (for click handling)
+              const checkin = table.checkins.find(c => c.guest_email === userPref.email)
+
+              return (
+                <Marker
+                  key={`rot-${userPref.email}`}
+                  longitude={position.longitude}
+                  latitude={position.latitude}
+                  anchor="center"
+                  onClick={e => {
+                    e.originalEvent.stopPropagation()
+                    // Only allow clicking if user has actually checked in (has a message/data)
+                    if (checkin) {
+                      if (selectedMeeple?.id === checkin.id) {
+                        setSelectedMeeple(null)
+                      } else {
+                        setSelectedMeeple(checkin)
+                      }
+                    }
+                  }}
+                >
+                  <div
+                    className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${checkin && newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''}`}
+                    style={!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined}
+                  >
+                    <Meeple
+                      color={userPref.meeple_color}
+                      size={40}
+                      className="drop-shadow-lg"
+                    />
+                  </div>
+                </Marker>
+              )
+            })
+          }
+
+          // For other tables: show only users who have checked in
+          return table.checkins.map((checkin, index) => {
             const position = getMeeplePosition(
               Number(table.latitude),
               Number(table.longitude),
@@ -521,7 +569,7 @@ export default function WeddingMap({
               </Marker>
             )
           })
-        )}
+        })}
 
         {/* Popup when a table is selected */}
         {selectedTable && (
