@@ -294,7 +294,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
           <form onSubmit={handleMessageSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
               <Textarea
-                placeholder="Leave a message about your visit... (optional)"
+                placeholder={`Share a message for the couple, a memory of ${table.name}, or whatever comes to mind!`}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
