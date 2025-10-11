@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Map as MapGL, Marker, Popup } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
@@ -32,6 +33,7 @@ export default function WeddingMap({
   showCheckinDialog = false,
   currentUserEmail = null
 }: WeddingMapProps) {
+  const router = useRouter()
   const [selectedTable, setSelectedTable] = useState<TableWithCheckins | null>(null)
   const [selectedMeeple, setSelectedMeeple] = useState<GuestCheckin | null>(null)
   const [checkinDialogOpen, setCheckinDialogOpen] = useState(showCheckinDialog)
@@ -39,6 +41,7 @@ export default function WeddingMap({
   const [newMeepleIds, setNewMeepleIds] = useState<Set<string>>(new Set())
   const previousCheckinIds = useRef<Set<string>>(new Set())
   const [userPreferences, setUserPreferences] = useState<UserPreferences[]>(initialUserPreferences)
+  const [pendingRefresh, setPendingRefresh] = useState(false)
   const [travelAnimation, setTravelAnimation] = useState<{
     startLat: number
     startLon: number
@@ -61,6 +64,17 @@ export default function WeddingMap({
   const meepleColorMap = new Map(
     userPreferences.map(pref => [pref.email, pref.meeple_color])
   )
+
+  // Handle refresh for first check-in (no travel animation)
+  useEffect(() => {
+    if (pendingRefresh && !travelAnimation) {
+      setPendingRefresh(false)
+      // Refresh immediately when there's no animation
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
+    }
+  }, [pendingRefresh, travelAnimation, router])
 
   // Helper function to check if both points are visible in current viewport
   const arePointsVisible = (lat1: number, lon1: number, lat2: number, lon2: number, currentZoom: number) => {
@@ -244,20 +258,35 @@ export default function WeddingMap({
         meepleColor: data.meepleColor || '#7B2D26',
         newCheckinId: data.checkin.id,
       })
+
+      // Mark that we need to refresh after animation
+      setPendingRefresh(true)
     } else {
       // No previous check-in - save view state and let useEffect handle drop animation after refresh
       sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
 
       // Store the new checkin ID so we can trigger animation after refresh
       sessionStorage.setItem('pendingDropAnimation', data.checkin.id)
+
+      // Refresh immediately for first check-in (no animation)
+      setPendingRefresh(true)
     }
   }
 
   // Handle travel animation completion
   const handleTravelComplete = () => {
     if (travelAnimation) {
-      // Just clear the travel animation - no drop needed
+      // Clear the travel animation
       setTravelAnimation(null)
+
+      // Refresh immediately after animation to sync with server
+      if (pendingRefresh) {
+        setPendingRefresh(false)
+        // Small delay to let the animation fully clear
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     }
   }
 
