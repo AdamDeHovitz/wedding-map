@@ -69,12 +69,16 @@ export default function WeddingMap({
   useEffect(() => {
     if (pendingRefresh && !travelAnimation) {
       setPendingRefresh(false)
+
+      // Save current view state before refresh to prevent zoom reset
+      sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
+
       // Refresh immediately when there's no animation
       setTimeout(() => {
         router.refresh()
       }, 100)
     }
-  }, [pendingRefresh, travelAnimation, router])
+  }, [pendingRefresh, travelAnimation, router, viewState])
 
   // Helper function to check if both points are visible in current viewport
   const arePointsVisible = (lat1: number, lon1: number, lat2: number, lon2: number, currentZoom: number) => {
@@ -243,11 +247,6 @@ export default function WeddingMap({
       if (optimalView) {
         // Only update view if both points aren't already visible
         setViewState(optimalView)
-        // Save view state before refresh
-        sessionStorage.setItem('mapViewState', JSON.stringify(optimalView))
-      } else {
-        // Save current view state
-        sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
       }
 
       setTravelAnimation({
@@ -260,15 +259,15 @@ export default function WeddingMap({
       })
 
       // Mark that we need to refresh after animation
+      // View state will be saved in handleTravelComplete
       setPendingRefresh(true)
     } else {
-      // No previous check-in - save view state and let useEffect handle drop animation after refresh
-      sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
-
+      // No previous check-in
       // Store the new checkin ID so we can trigger animation after refresh
       sessionStorage.setItem('pendingDropAnimation', data.checkin.id)
 
       // Refresh immediately for first check-in (no animation)
+      // View state will be saved in useEffect before refresh
       setPendingRefresh(true)
     }
   }
@@ -282,6 +281,11 @@ export default function WeddingMap({
       // Refresh immediately after animation to sync with server
       if (pendingRefresh) {
         setPendingRefresh(false)
+
+        // Save CURRENT view state (where animation ended) before refresh
+        // This prevents zoom reset when page refreshes
+        sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
+
         // Small delay to let the animation fully clear
         setTimeout(() => {
           router.refresh()
