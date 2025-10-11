@@ -245,4 +245,15 @@
   .mapboxgl-popup-content {
     position: relative !important;
   }
+
+  /* Hide default Mapbox popup background and styling */
+  .mapboxgl-popup-content {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .mapboxgl-popup-tip {
+    display: none !important;
+  }
 }

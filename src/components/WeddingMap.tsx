@@ -538,6 +538,7 @@ export default function WeddingMap({
                   setSelectedTable(null)
                 } else {
                   setSelectedTable(table)
+                  setSelectedMeeple(null) // Close meeple popup when table is selected
 
                   // Auto-zoom to see meeples if zoom level is too low
                   const MIN_MEEPLE_ZOOM = 15
@@ -631,6 +632,7 @@ export default function WeddingMap({
                         setSelectedMeeple(null)
                       } else {
                         setSelectedMeeple(checkin)
+                        setSelectedTable(null) // Close table popup when meeple is selected
                       }
                     }
                   }}
@@ -673,6 +675,7 @@ export default function WeddingMap({
                     setSelectedMeeple(null)
                   } else {
                     setSelectedMeeple(checkin)
+                    setSelectedTable(null) // Close table popup when meeple is selected
                   }
                 }}
               >
