@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(gh issue close:*)",
-      "Bash(gh issue edit:*)"
+      "Bash(gh issue edit:*)",
+      "Bash(npm test)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ],
     "deny": [],
     "ask": []
