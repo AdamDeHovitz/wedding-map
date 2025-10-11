@@ -23,37 +23,10 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
   const TableCell = ({ name, isSweetheart = false, className = '' }: { name: string; isSweetheart?: boolean; className?: string }) => {
     const visited = isVisited(name)
 
-    if (isSweetheart) {
-      return (
-        <div
-          className={`
-            h-32 rounded-3xl shadow-2xl
-            flex flex-col items-center justify-center
-            text-center p-4
-            transition-all duration-200 cursor-pointer
-            ${visited
-              ? 'bg-gradient-to-br from-rose-600 via-rose-500 to-pink-500 text-white border-3 border-rose-400 shadow-rose-500/50'
-              : 'bg-gradient-to-br from-rose-100 via-pink-50 to-rose-50 text-rose-900 border-3 border-rose-200 hover:border-rose-300'
-            }
-            ${visited ? 'hover:shadow-2xl hover:scale-105' : 'hover:shadow-xl hover:scale-102'}
-            ${className}
-          `}
-          title={`${name} (Sweetheart Table)${visited ? ' ✓ Visited' : ''}`}
-          onClick={() => onTableClick?.(name)}
-        >
-          <div className="text-2xl mb-1">♥</div>
-          <span className="text-xs font-bold leading-tight">{name}</span>
-          <span className={`text-[10px] mt-1 ${visited ? 'text-white/90' : 'text-rose-700/70'} italic`}>
-            Sweetheart Table
-          </span>
-        </div>
-      )
-    }
-
     return (
       <div
         className={`
-          h-20
+          ${isSweetheart ? 'h-28' : 'h-20'}
           rounded-2xl shadow-lg
           flex items-center justify-center
           text-center p-3
@@ -68,7 +41,7 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
         title={`${name}${visited ? ' ✓ Visited' : ''}`}
         onClick={() => onTableClick?.(name)}
       >
-        <span className="text-[11px] font-semibold leading-tight">
+        <span className={`${isSweetheart ? 'text-xs' : 'text-[11px]'} font-semibold leading-tight`}>
           {name}
         </span>
       </div>
@@ -82,33 +55,30 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
         <p className="text-xs text-center text-[#7B2D26]/70">Rule of Thirds</p>
       </div>
 
-      <div className="space-y-4 w-full">
+      <div className="space-y-3 w-full">
         {/* Top Row: 4 tables */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           <TableCell name="Seaview Terrace" className="w-full" />
           <TableCell name="State Street" className="w-full" />
           <TableCell name="Baltic Street" className="w-full" />
           <TableCell name="Connecticut Ave" className="w-full" />
         </div>
 
-        {/* Visual separator */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[#F5E6D3] to-transparent opacity-50"></div>
-
-        {/* Middle Section - sweetheart table + 2x3 grid */}
-        <div className="flex gap-4 items-center">
-          {/* Boerum Place (Sweetheart table) - standalone on left */}
-          <div className="flex-shrink-0 w-32">
-            <TableCell name="Boerum Place" isSweetheart className="w-full" />
+        {/* Middle Section - using grid to align widths */}
+        <div className="grid grid-cols-4 gap-2">
+          {/* Boerum Place (Sweetheart table) - narrower, spans 1 column */}
+          <div className="col-span-1 flex items-center justify-center">
+            <TableCell name="Boerum Place" isSweetheart className="w-20" />
           </div>
 
-          {/* 2 rows of 3 tables on right */}
-          <div className="flex-1 space-y-3">
-            <div className="grid grid-cols-3 gap-3">
+          {/* 2 rows of 3 tables - spans remaining 3 columns */}
+          <div className="col-span-3 space-y-2">
+            <div className="grid grid-cols-3 gap-2">
               <TableCell name="River Heights" className="w-full" />
               <TableCell name="Lakewood Drive" className="w-full" />
               <TableCell name="College Ave" className="w-full" />
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <TableCell name="Nerudova" className="w-full" />
               <TableCell name="Topping Drive" className="w-full" />
               <TableCell name="115th Street" className="w-full" />
@@ -116,11 +86,8 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
           </div>
         </div>
 
-        {/* Visual separator */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[#F5E6D3] to-transparent opacity-50"></div>
-
         {/* Bottom Row: 4 tables */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           <TableCell name="Waterman Street" className="w-full" />
           <TableCell name="John Street" className="w-full" />
           <TableCell name="Clark Street" className="w-full" />
