@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react'
 import { WeddingTable } from '@/types/database'
 import {
@@ -30,7 +29,6 @@ interface CheckinDialogProps {
 }
 
 export function CheckinDialog({ open, onOpenChange, table, requireCode = true, onCheckinSuccess }: CheckinDialogProps) {
-  const router = useRouter()
   const { data: session, status } = useSession()
   const [step, setStep] = useState<'code' | 'message'>(requireCode ? 'code' : 'message')
   const [code, setCode] = useState('')
@@ -92,14 +90,8 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       // Close dialog
       onOpenChange(false)
 
-      // Delay refresh to allow animation to play
-      // If there's travel animation, wait longer
-      const hasTravel = data.previousCheckin && data.previousCheckin.wedding_tables
-      const delay = hasTravel ? 13000 : 1000 // 13 seconds for travel (max 12s animation + 1s buffer), 1 second for drop
-
-      setTimeout(() => {
-        router.refresh()
-      }, delay)
+      // Note: WeddingMap now handles the refresh timing after animations complete
+      // No need for a delay here anymore
 
       // Reset state
       setMessage('')
