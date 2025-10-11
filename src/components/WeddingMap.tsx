@@ -11,12 +11,7 @@ import { TravelAnimation } from '@/components/TravelAnimation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SeatingChart } from '@/components/SeatingChart'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface WeddingMapProps {
   tables: WeddingTable[]
@@ -763,8 +758,8 @@ export default function WeddingMap({
           })
         })}
 
-        {/* Popup when a table is selected (not Rule of Thirds) */}
-        {selectedTable && (
+        {/* Popup when a table is selected (excluding Rule of Thirds) */}
+        {selectedTable && selectedTable.id !== 'rule-of-thirds' && (
           <Popup
             longitude={Number(selectedTable.longitude)}
             latitude={Number(selectedTable.latitude)}
@@ -774,49 +769,52 @@ export default function WeddingMap({
             closeOnClick={false}
             className="max-w-sm"
           >
-            <div className="bg-white rounded-lg shadow-lg p-4 min-w-[260px] max-w-[320px]">
-              <h3 className="font-bold text-lg text-gray-900 mb-1">{selectedTable.name}</h3>
-              <p className="text-sm text-gray-600 mb-3">{selectedTable.address}</p>
+            <Card className="border-0 shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
+                <p className="text-sm text-gray-600">{selectedTable.address}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-700">
+                      {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} here
+                    </p>
+                    {(() => {
+                      // Check if current user has checked in to this location before
+                      const hasCheckedIn = currentUserEmail && checkins.some(
+                        c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+                      )
 
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-medium text-gray-700">
-                  {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''}
-                </span>
-                {(() => {
-                  // Check if current user has checked in to this location before
-                  const hasCheckedIn = currentUserEmail && checkins.some(
-                    c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
-                  )
-
-                  if (hasCheckedIn) {
-                    return (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          handleVisit(selectedTable)
-                          setSelectedTable(null)
-                        }}
-                      >
-                        Visit
-                      </Button>
-                    )
-                  } else {
-                    return (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setCheckinTable(selectedTable)
-                          setCheckinDialogOpen(true)
-                          setSelectedTable(null)
-                        }}
-                      >
-                        Check In
-                      </Button>
-                    )
-                  }
-                })()}
-              </div>
+                      if (hasCheckedIn) {
+                        return (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              handleVisit(selectedTable)
+                              setSelectedTable(null)
+                            }}
+                          >
+                            Visit
+                          </Button>
+                        )
+                      } else {
+                        return (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setCheckinTable(selectedTable)
+                              setCheckinDialogOpen(true)
+                              setSelectedTable(null)
+                            }}
+                          >
+                            Check In
+                          </Button>
+                        )
+                      }
+                    })()}
+                  </div>
 
               {selectedTable.checkins.length > 0 && (
                 <p className="text-xs text-gray-500 italic mt-3 pt-3 border-t border-gray-200">
@@ -824,6 +822,8 @@ export default function WeddingMap({
                 </p>
               )}
             </div>
+              </CardContent>
+            </Card>
           </Popup>
         )}
 
@@ -916,23 +916,33 @@ export default function WeddingMap({
         onCheckinSuccess={handleCheckinSuccess}
       />
 
-      {/* Full-screen Seating Chart Dialog */}
-      <Dialog open={seatingChartOpen} onOpenChange={setSeatingChartOpen}>
-        <DialogContent className="max-w-full h-full sm:max-w-4xl sm:h-auto max-h-screen overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-serif text-center text-[#6B2D26]">
-              Rule of Thirds
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center justify-center py-4">
+      {/* Full-screen seating chart overlay for Rule of Thirds venue */}
+      {seatingChartOpen && (
+        <div className="fixed inset-0 z-50 bg-gradient-to-br from-rose-50/25 to-white/25 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <button
+            onClick={() => setSeatingChartOpen(false)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#7B2D26] hover:bg-[#7B2D26] hover:text-white transition-colors z-10"
+            aria-label="Close seating chart"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="w-full max-w-3xl">
             <SeatingChart
               tables={tables}
               userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
               onTableClick={handleSeatingChartTableClick}
             />
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   )
 }
