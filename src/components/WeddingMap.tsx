@@ -184,6 +184,35 @@ export default function WeddingMap({
     previousCheckin: any | null
     meepleColor: string | null
   }) => {
+    const checkin = data.checkin
+    const userEmail = checkin.guest_email
+    const newTableId = checkin.table_id
+
+    // CRITICAL: Update userPreferences state IMMEDIATELY for correct UI during animation
+    // This fixes issues where new users don't appear at Rule of Thirds, and
+    // users show wrong grey/color state during travel animations
+    setUserPreferences(prevPrefs => {
+      const existingUser = prevPrefs.find(p => p.email === userEmail)
+
+      if (existingUser) {
+        // Update existing user's current_location_id
+        return prevPrefs.map(pref =>
+          pref.email === userEmail
+            ? { ...pref, current_location_id: newTableId }
+            : pref
+        )
+      } else {
+        // Add new user to the array (fixes new users not appearing at Rule of Thirds)
+        return [...prevPrefs, {
+          email: userEmail,
+          meeple_color: data.meepleColor || '#7B2D26',
+          display_name: checkin.guest_name,
+          current_location_id: newTableId,
+          updated_at: new Date().toISOString()
+        }]
+      }
+    })
+
     // If there's a previous check-in, show travel animation
     if (data.previousCheckin && data.previousCheckin.wedding_tables) {
       const prevTable = data.previousCheckin.wedding_tables
@@ -492,7 +521,8 @@ export default function WeddingMap({
                 index,
                 userPreferences.length
               )
-              const isCurrentlyHere = isUserCurrentlyAtLocation(userPref.email, table.id)
+              // Rule of Thirds is the "home base" - everyone is always full color, never greyed out
+              const isCurrentlyHere = true
 
               // Find if this user has a checkin at this table (for click handling)
               const checkin = table.checkins.find(c => c.guest_email === userPref.email)
