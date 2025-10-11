@@ -85,9 +85,9 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
               <TableCell name="College Ave" className="w-full" />
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <TableCell name="Nerudova" className="w-full" />
+              <TableCell name="Nerudova Street" className="w-full" />
               <TableCell name="Topping Drive" className="w-full" />
-              <TableCell name="115th Street" className="w-full" />
+              <TableCell name="W 115th Street" className="w-full" />
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
           <TableCell name="Waterman Street" className="w-full" />
           <TableCell name="John Street" className="w-full" />
           <TableCell name="Clark Street" className="w-full" />
-          <TableCell name="53rd Street" className="w-full" />
+          <TableCell name="W 53rd Street" className="w-full" />
         </div>
       </div>
 
