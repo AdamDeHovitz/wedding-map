@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue close:*)",
+      "Bash(gh issue edit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
