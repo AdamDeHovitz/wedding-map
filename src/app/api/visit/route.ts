@@ -23,6 +23,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { tableId } = body
 
+    // NOTE: session.user.email contains either an email address (from Google OAuth)
+    // or a username (from credentials login). Both are stored in the 'email' field.
+    // See src/auth.ts for details on this design decision.
+
     if (!tableId) {
       return NextResponse.json(
         { error: 'Table ID is required' },
