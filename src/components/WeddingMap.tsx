@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Map as MapGL, Marker, Popup, Layer } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Meeple } from '@/components/Meeple'
 import { CheckinDialog } from '@/components/CheckinDialog'
 import { TravelAnimation } from '@/components/TravelAnimation'
@@ -703,61 +702,56 @@ export default function WeddingMap({
             closeOnClick={false}
             className="max-w-sm"
           >
-            <Card className="border-0 shadow-none">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
-                  <p className="text-sm text-gray-600">{selectedTable.address}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-700">
-                        {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} here
-                      </p>
-                      {(() => {
-                        // Check if current user has checked in to this location before
-                        const hasCheckedIn = currentUserEmail && checkins.some(
-                          c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
-                        )
+            <div className="bg-white rounded-lg shadow-lg p-4 min-w-[260px] max-w-[320px]">
+              <h3 className="font-bold text-lg text-gray-900 mb-1">{selectedTable.name}</h3>
+              <p className="text-sm text-gray-600 mb-3">{selectedTable.address}</p>
 
-                        if (hasCheckedIn) {
-                          return (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                handleVisit(selectedTable)
-                                setSelectedTable(null)
-                              }}
-                            >
-                              Visit
-                            </Button>
-                          )
-                        } else {
-                          return (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setCheckinTable(selectedTable)
-                                setCheckinDialogOpen(true)
-                                setSelectedTable(null)
-                              }}
-                            >
-                              Check In
-                            </Button>
-                          )
-                        }
-                      })()}
-                    </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-gray-700">
+                  {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''}
+                </span>
+                {(() => {
+                  // Check if current user has checked in to this location before
+                  const hasCheckedIn = currentUserEmail && checkins.some(
+                    c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+                  )
 
-                    {selectedTable.checkins.length > 0 && (
-                      <p className="text-sm text-gray-600 italic">
-                        Click on meeples to see what other guests have said!
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                  if (hasCheckedIn) {
+                    return (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          handleVisit(selectedTable)
+                          setSelectedTable(null)
+                        }}
+                      >
+                        Visit
+                      </Button>
+                    )
+                  } else {
+                    return (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setCheckinTable(selectedTable)
+                          setCheckinDialogOpen(true)
+                          setSelectedTable(null)
+                        }}
+                      >
+                        Check In
+                      </Button>
+                    )
+                  }
+                })()}
+              </div>
+
+              {selectedTable.checkins.length > 0 && (
+                <p className="text-xs text-gray-500 italic mt-3 pt-3 border-t border-gray-200">
+                  Click on meeples to see what other guests have said!
+                </p>
+              )}
+            </div>
           </Popup>
         )}
 
@@ -776,24 +770,12 @@ export default function WeddingMap({
             closeOnClick={false}
             offset={20}
           >
-            <Card className="border-0 shadow-none">
-              <CardContent className="pt-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <Meeple color={getMeepleColor(selectedMeeple.guest_email)} size={48} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base text-gray-900">{selectedMeeple.guest_name}</p>
-                    {selectedMeeple.message && (
-                      <p className="text-sm text-gray-600 italic mt-2">&quot;{selectedMeeple.message}&quot;</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-2">
-                      {new Date(selectedMeeple.checked_in_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-lg shadow-lg p-3 min-w-[200px] max-w-[280px]">
+              <p className="font-semibold text-base text-gray-900 mb-2">{selectedMeeple.guest_name}</p>
+              {selectedMeeple.message && (
+                <p className="text-sm text-gray-600 italic leading-relaxed">&quot;{selectedMeeple.message}&quot;</p>
+              )}
+            </div>
           </Popup>
         )}
       </MapGL>
