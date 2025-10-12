@@ -11,9 +11,17 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export default async function Home() {
+interface HomeProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function Home({ searchParams }: HomeProps) {
   // Get current user session
   const session = await auth()
+
+  // Get search params
+  const params = await searchParams
+  const checkinTableId = params.checkin as string | undefined
 
   // Fetch all wedding tables
   const { data: tables } = await supabase
@@ -46,11 +54,19 @@ export default async function Home() {
 
   const allTables = [...(tables || []), ruleOfThirdsVenue]
 
+  // Find the initial table if checkin parameter is provided
+  const initialTable = checkinTableId
+    ? allTables.find(t => t.id === checkinTableId) || null
+    : null
+
+  // Determine the header title
+  const headerTitle = initialTable ? initialTable.name : 'Our Special Places'
+
   return (
     <div className="relative">
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] px-4 w-full max-w-md pointer-events-none">
         <div className="bg-white/90 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 rounded-full shadow-lg relative pointer-events-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#7B2D26] text-center">Our Special Places</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#7B2D26] text-center">{headerTitle}</h1>
           {session?.user && (
             <Link
               href="/settings"
@@ -68,6 +84,8 @@ export default async function Home() {
         checkins={checkins || []}
         userPreferences={userPreferences || []}
         currentUserEmail={session?.user?.email || null}
+        initialTable={initialTable}
+        showCheckinDialog={!!initialTable}
       />
     </div>
   )
