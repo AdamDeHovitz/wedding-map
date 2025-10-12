@@ -33,11 +33,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Ignore files marked with .local (e.g. .claude/settings.local.json)
+*.local*
+
 # env files (can opt-in for committing if needed)
 .env*.local
 .env
 .env.production
-
 # Allow .env.local.example to be committed (it has no secrets)
 !.env.local.example
 

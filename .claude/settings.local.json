@@ -9,7 +9,10 @@
       "Bash(git revert:*)",
       "mcp__serena__search_for_pattern",
       "Bash(git log:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
