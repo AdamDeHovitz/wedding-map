@@ -49,6 +49,7 @@ export default function WeddingMap({
   const previousCheckinIds = useRef<Set<string>>(new Set())
   const [userPreferences, setUserPreferences] = useState<UserPreferences[]>(initialUserPreferences)
   const [pendingRefresh, setPendingRefresh] = useState(false)
+  const hasCheckedIn = useRef(false)
   const [isEditingMessage, setIsEditingMessage] = useState(false)
   const [editedMessage, setEditedMessage] = useState('')
   const [isSavingMessage, setIsSavingMessage] = useState(false)
@@ -216,6 +217,10 @@ export default function WeddingMap({
     previousCheckin: any | null
     meepleColor: string | null
   }) => {
+    // Mark that user has successfully checked in
+    // This prevents double navigation when dialog closes
+    hasCheckedIn.current = true
+
     const checkin = data.checkin
     const userEmail = checkin.guest_email
     const newTableId = checkin.table_id
@@ -379,6 +384,25 @@ export default function WeddingMap({
       alert('Failed to update message')
     } finally {
       setIsSavingMessage(false)
+    }
+  }
+
+  // Handle checkin dialog open/close
+  // If user closes dialog without checking in (coming from checkin link),
+  // navigate to main page to clear query params
+  const handleCheckinDialogChange = (open: boolean) => {
+    setCheckinDialogOpen(open)
+
+    // If dialog is closing and we came from a checkin link (initialTable exists),
+    // navigate to main page to clear query params
+    // BUT only if user didn't successfully check in (that case is handled by handleCheckinSuccess)
+    if (!open && initialTable && !hasCheckedIn.current) {
+      // Save current view state before navigation to preserve zoom
+      sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
+
+      // Navigate to main page (clearing query params)
+      // This ensures header shows "Our Special Places" and all locations require codes
+      router.push('/')
     }
   }
 
@@ -886,7 +910,7 @@ export default function WeddingMap({
 
       <CheckinDialog
         open={checkinDialogOpen}
-        onOpenChange={setCheckinDialogOpen}
+        onOpenChange={handleCheckinDialogChange}
         table={checkinTable}
         requireCode={!initialTable || checkinTable?.id !== initialTable?.id}
         onCheckinSuccess={handleCheckinSuccess}
