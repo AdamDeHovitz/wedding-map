@@ -5,6 +5,7 @@ import MeepleCustomizer from '@/components/MeepleCustomizer'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import type { MeepleStyle } from '@/components/Meeple'
 
 export default async function SettingsPage() {
   const session = await auth()
@@ -56,13 +57,14 @@ export default async function SettingsPage() {
             <CardHeader>
               <CardTitle>Meeple Customization</CardTitle>
               <CardDescription>
-                Choose your meeple color. This will update across all your check-ins.
+                Choose your meeple color and style. This will update across all your check-ins.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <MeepleCustomizer
                 userEmail={session.user.email!}
                 currentColor={preferences?.meeple_color || '#7B2D26'}
+                currentStyle={(preferences?.meeple_style as MeepleStyle) || '3d'}
               />
             </CardContent>
           </Card>

@@ -6,9 +6,17 @@
       "Bash(npm test)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(git revert:*)"
+      "Bash(git revert:*)",
+      "Bash(git log:*)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)",
+      "Read(//Users/adamdeho/Downloads/**)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "serena"
+  ]
 }

@@ -45,6 +45,7 @@ export interface Database {
         Row: {
           email: string
           meeple_color: string
+          meeple_style?: string | null
           display_name: string | null
           current_location_id: string | null
           updated_at: string
@@ -52,6 +53,7 @@ export interface Database {
         Insert: {
           email: string
           meeple_color: string
+          meeple_style?: string | null
           display_name?: string | null
           current_location_id?: string | null
           updated_at?: string
@@ -59,6 +61,7 @@ export interface Database {
         Update: {
           email?: string
           meeple_color?: string
+          meeple_style?: string | null
           display_name?: string | null
           current_location_id?: string | null
           updated_at?: string

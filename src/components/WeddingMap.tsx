@@ -59,6 +59,7 @@ export default function WeddingMap({
     endLat: number
     endLon: number
     meepleColor: string
+    meepleStyle: '3d' | 'flat'
     newCheckinId: string
   } | null>(null)
   const [viewState, setViewState] = useState({
@@ -76,6 +77,11 @@ export default function WeddingMap({
   // Create a map of email -> meeple_color for quick lookup
   const meepleColorMap = new Map(
     userPreferences.map(pref => [pref.email, pref.meeple_color])
+  )
+
+  // Create a map of email -> meeple_style for quick lookup
+  const meepleStyleMap = new Map(
+    userPreferences.map(pref => [pref.email, (pref.meeple_style || '3d') as '3d' | 'flat'])
   )
 
   // Handle refresh for first check-in (no travel animation)
@@ -166,6 +172,11 @@ export default function WeddingMap({
   // Helper to get meeple color for a user
   const getMeepleColor = (email: string) => {
     return meepleColorMap.get(email) || '#7B2D26' // Default to burgundy
+  }
+
+  // Helper to get meeple style for a user
+  const getMeepleStyle = (email: string): '3d' | 'flat' => {
+    return meepleStyleMap.get(email) || '3d' // Default to 3d
   }
 
   // Helper to calculate meeple positions in a circle around a location
@@ -274,6 +285,7 @@ export default function WeddingMap({
         endLat,
         endLon,
         meepleColor: data.meepleColor || '#7B2D26',
+        meepleStyle: getMeepleStyle(userEmail),
         newCheckinId: data.checkin.id,
       })
 
@@ -455,6 +467,7 @@ export default function WeddingMap({
           endLat: newLat,
           endLon: newLon,
           meepleColor: data.meepleColor || '#7B2D26',
+          meepleStyle: currentUserEmail ? getMeepleStyle(currentUserEmail) : '3d',
           newCheckinId: `visit-${Date.now()}`,
         })
       }
@@ -666,6 +679,7 @@ export default function WeddingMap({
             endLat={travelAnimation.endLat}
             endLon={travelAnimation.endLon}
             meepleColor={travelAnimation.meepleColor}
+            meepleStyle={travelAnimation.meepleStyle}
             onComplete={handleTravelComplete}
           />
         )}
@@ -713,6 +727,7 @@ export default function WeddingMap({
                     <Meeple
                       color={userPref.meeple_color}
                       size={40}
+                      style={getMeepleStyle(userPref.email)}
                       className="drop-shadow-lg"
                     />
                   </div>
@@ -755,6 +770,7 @@ export default function WeddingMap({
                   <Meeple
                     color={getMeepleColor(checkin.guest_email)}
                     size={40}
+                    style={getMeepleStyle(checkin.guest_email)}
                     className="drop-shadow-lg"
                   />
                 </div>
