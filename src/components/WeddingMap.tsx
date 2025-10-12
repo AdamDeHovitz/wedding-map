@@ -82,12 +82,13 @@ export default function WeddingMap({
     if (pendingRefresh && !travelAnimation) {
       setPendingRefresh(false)
 
-      // Save current view state before refresh to prevent zoom reset
+      // Save current view state before navigation to prevent zoom reset
       sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
 
-      // Refresh immediately when there's no animation
+      // Navigate to main page (clearing query params) after check-in
+      // This ensures header shows "Our Special Places" and all locations require codes
       setTimeout(() => {
-        router.refresh()
+        router.push('/')
       }, 100)
     }
   }, [pendingRefresh, travelAnimation, router, viewState])
@@ -291,17 +292,18 @@ export default function WeddingMap({
       // Clear the travel animation
       setTravelAnimation(null)
 
-      // Refresh immediately after animation to sync with server
+      // Navigate to main page after animation to sync with server
       if (pendingRefresh) {
         setPendingRefresh(false)
 
-        // Save CURRENT view state (where animation ended) before refresh
-        // This prevents zoom reset when page refreshes
+        // Save CURRENT view state (where animation ended) before navigation
+        // This prevents zoom reset when page navigates
         sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
 
-        // Small delay to let the animation fully clear
+        // Navigate to main page (clearing query params) after check-in
+        // This ensures header shows "Our Special Places" and all locations require codes
         setTimeout(() => {
-          router.refresh()
+          router.push('/')
         }, 100)
       }
     }
