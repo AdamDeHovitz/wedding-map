@@ -11,6 +11,8 @@
       "Bash(git reflog:*)",
       "Bash(git gc:*)",
       "Read(//Users/adamdeho/Downloads/**)"
+      "mcp__serena__search_for_pattern",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []
