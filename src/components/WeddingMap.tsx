@@ -9,6 +9,7 @@ import { Meeple } from '@/components/Meeple'
 import { CheckinDialog } from '@/components/CheckinDialog'
 import { TravelAnimation } from '@/components/TravelAnimation'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { SeatingChart } from '@/components/SeatingChart'
 import {
   Dialog,
@@ -48,6 +49,9 @@ export default function WeddingMap({
   const previousCheckinIds = useRef<Set<string>>(new Set())
   const [userPreferences, setUserPreferences] = useState<UserPreferences[]>(initialUserPreferences)
   const [pendingRefresh, setPendingRefresh] = useState(false)
+  const [isEditingMessage, setIsEditingMessage] = useState(false)
+  const [editedMessage, setEditedMessage] = useState('')
+  const [isSavingMessage, setIsSavingMessage] = useState(false)
   const [travelAnimation, setTravelAnimation] = useState<{
     startLat: number
     startLon: number
@@ -335,6 +339,42 @@ export default function WeddingMap({
         setSelectedTable(tableWithCheckins)
       }
     }, 500)
+  }
+
+  // Handle saving edited message
+  const handleSaveMessage = async () => {
+    if (!selectedMeeple) return
+
+    setIsSavingMessage(true)
+
+    try {
+      const response = await fetch('/api/checkin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkinId: selectedMeeple.id,
+          message: editedMessage.trim() || null,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || 'Failed to update message')
+        return
+      }
+
+      // Reset edit state
+      setIsEditingMessage(false)
+      setEditedMessage('')
+
+      // Refresh to show updated message
+      router.refresh()
+    } catch (error) {
+      console.error('Error updating message:', error)
+      alert('Failed to update message')
+    } finally {
+      setIsSavingMessage(false)
+    }
   }
 
   // Handle successful visit with animation
@@ -768,15 +808,71 @@ export default function WeddingMap({
               tablesWithCheckins.find(t => t.id === selectedMeeple.table_id)?.latitude : 0
             )}
             anchor="bottom"
-            onClose={() => setSelectedMeeple(null)}
+            onClose={() => {
+              setSelectedMeeple(null)
+              setIsEditingMessage(false)
+              setEditedMessage('')
+            }}
             closeButton={true}
             closeOnClick={false}
             offset={20}
           >
             <div className="bg-white rounded-lg shadow-lg p-3 min-w-[200px] max-w-[280px]">
               <p className="font-semibold text-base text-gray-900 mb-2">{selectedMeeple.guest_name}</p>
-              {selectedMeeple.message && (
-                <p className="text-sm text-gray-600 italic leading-relaxed">&quot;{selectedMeeple.message}&quot;</p>
+
+              {isEditingMessage ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={editedMessage}
+                    onChange={(e) => setEditedMessage(e.target.value)}
+                    placeholder="Enter your message..."
+                    maxLength={280}
+                    rows={3}
+                    className="text-sm resize-none"
+                  />
+                  <p className="text-xs text-gray-500">{editedMessage.length}/280 characters</p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveMessage}
+                      disabled={isSavingMessage}
+                      className="flex-1"
+                    >
+                      {isSavingMessage ? 'Saving...' : 'Save'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingMessage(false)
+                        setEditedMessage('')
+                      }}
+                      disabled={isSavingMessage}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {selectedMeeple.message && (
+                    <p className="text-sm text-gray-600 italic leading-relaxed mb-2">&quot;{selectedMeeple.message}&quot;</p>
+                  )}
+                  {currentUserEmail === selectedMeeple.guest_email && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingMessage(true)
+                        setEditedMessage(selectedMeeple.message || '')
+                      }}
+                      className="w-full mt-2"
+                    >
+                      Edit Message
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </Popup>
@@ -787,7 +883,7 @@ export default function WeddingMap({
         open={checkinDialogOpen}
         onOpenChange={setCheckinDialogOpen}
         table={checkinTable}
-        requireCode={!initialTable}
+        requireCode={!initialTable || checkinTable?.id !== initialTable?.id}
         onCheckinSuccess={handleCheckinSuccess}
       />
 

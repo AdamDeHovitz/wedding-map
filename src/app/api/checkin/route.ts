@@ -115,3 +115,69 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    // Check if user is authenticated
+    const session = await auth()
+
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { checkinId, message } = body
+
+    if (!checkinId) {
+      return NextResponse.json(
+        { error: 'Checkin ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Verify the checkin belongs to the current user
+    const { data: existingCheckin } = await supabase
+      .from('guest_checkins')
+      .select('*')
+      .eq('id', checkinId)
+      .eq('guest_email', session.user.email!)
+      .single()
+
+    if (!existingCheckin) {
+      return NextResponse.json(
+        { error: 'Checkin not found or unauthorized' },
+        { status: 404 }
+      )
+    }
+
+    // Update the message
+    const { data, error } = await supabase
+      .from('guest_checkins')
+      .update({ message: message || null })
+      .eq('id', checkinId)
+      .select('*')
+      .single()
+
+    if (error) {
+      console.error('Supabase error:', error)
+      return NextResponse.json(
+        { error: 'Failed to update message' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      checkin: data,
+    })
+  } catch (error) {
+    console.error('Update message error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
