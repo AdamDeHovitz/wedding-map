@@ -3,6 +3,29 @@
 import { GuestCheckin, WeddingTable } from '@/types/database'
 import { Card } from '@/components/ui/card'
 
+/**
+ * SeatingChart Component
+ *
+ * CRITICAL REQUIREMENT:
+ * All table names in the <TableCell name="..."> props below MUST EXACTLY match
+ * the table names in the database (case-sensitive, including spaces and full words).
+ *
+ * Common mistakes that break the "visited" status:
+ * - "Ave" instead of "Avenue"
+ * - "W" instead of "West"
+ * - "River Heights" instead of "River Heights Road"
+ * - Extra/missing spaces
+ *
+ * TO VERIFY TABLE NAMES:
+ * Run: npx tsx scripts/check-table-names.ts
+ *
+ * TO TEST:
+ * Run: npm test seating-chart-table-names.test.ts
+ *
+ * This matching is done in isVisited() which compares the name prop against
+ * the database table names to determine if a table should show as visited.
+ */
+
 interface SeatingChartProps {
   tables: WeddingTable[]
   userCheckins: GuestCheckin[]
@@ -14,6 +37,8 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
   const visitedTableIds = new Set(userCheckins.map(c => c.table_id))
 
   // Helper to check if a table has been visited
+  // This function matches table names EXACTLY - any mismatch will cause
+  // the table to incorrectly show as "not visited"
   const isVisited = (tableName: string) => {
     const table = tables.find(t => t.name === tableName)
     return table ? visitedTableIds.has(table.id) : false
@@ -62,12 +87,18 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
       </div>
 
       <div className="space-y-4 w-full">
+        {/*
+          IMPORTANT: All table names below must EXACTLY match database names.
+          Run `npx tsx scripts/check-table-names.ts` to verify.
+          Run `npm test seating-chart-table-names.test.ts` to test.
+        */}
+
         {/* Top Row: 4 tables */}
         <div className="grid grid-cols-4 gap-3">
           <TableCell name="Seaview Terrace" className="w-full" />
           <TableCell name="State Street" className="w-full" />
           <TableCell name="Baltic Street" className="w-full" />
-          <TableCell name="Connecticut Ave" className="w-full" />
+          <TableCell name="Connecticut Avenue" className="w-full" />
         </div>
 
         {/* Middle Section - using grid to align widths */}
@@ -80,14 +111,14 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
           {/* 2 rows of 3 tables - spans remaining 3 columns */}
           <div className="col-span-3 space-y-3">
             <div className="grid grid-cols-3 gap-3">
-              <TableCell name="River Heights" className="w-full" />
+              <TableCell name="River Heights Road" className="w-full" />
               <TableCell name="Lakewood Drive" className="w-full" />
-              <TableCell name="College Ave" className="w-full" />
+              <TableCell name="College Avenue" className="w-full" />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <TableCell name="Nerudova Street" className="w-full" />
               <TableCell name="Topping Drive" className="w-full" />
-              <TableCell name="W 115th Street" className="w-full" />
+              <TableCell name="West 115th Street" className="w-full" />
             </div>
           </div>
         </div>
@@ -97,7 +128,7 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
           <TableCell name="Waterman Street" className="w-full" />
           <TableCell name="John Street" className="w-full" />
           <TableCell name="Clark Street" className="w-full" />
-          <TableCell name="W 53rd Street" className="w-full" />
+          <TableCell name="West 53rd Street" className="w-full" />
         </div>
       </div>
 
