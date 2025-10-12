@@ -8,11 +8,14 @@
       "Bash(xargs kill:*)",
       "Bash(git revert:*)",
       "Bash(git log:*)",
+      "Bash(gh pr create:*)",
       "Bash(git reflog:*)",
       "Bash(git gc:*)",
       "Read(//Users/adamdeho/Downloads/**)"
       "mcp__serena__search_for_pattern",
-      "Bash(gh pr create:*)"
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

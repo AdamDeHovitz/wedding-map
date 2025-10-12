@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Map as MapGL, Marker, Popup, Layer } from 'react-map-gl/mapbox'
+import { Map as MapGL, Marker, Popup, Layer, MapRef } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { WeddingTable, GuestCheckin, UserPreferences } from '@/types/database'
 import { Meeple } from '@/components/Meeple'
@@ -64,6 +64,7 @@ export default function WeddingMap({
     pitch: 45, // Tilt angle for 3D effect (0-85 degrees)
     bearing: 0 // Rotation angle (0-360 degrees)
   })
+  const mapRef = useRef<MapRef | null>(null)
 
   // Threshold for switching between table icons and individual meeples
   const ZOOM_THRESHOLD = 14
@@ -546,9 +547,54 @@ export default function WeddingMap({
     previousCheckinIds.current = currentCheckinIds
   }, [checkins])
 
+  // Set up custom lighting for warm, elegant 3D effects
+  useEffect(() => {
+    if (!mapRef.current) return
+
+    const map = mapRef.current.getMap()
+
+    const handleStyleLoad = () => {
+      // Add warm ambient and directional lighting that complements burgundy/cream theme
+      map.setLights([
+        {
+          type: 'ambient',
+          id: 'ambient-light',
+          properties: {
+            intensity: 0.4,
+            color: '#F5E6D3'  // Warm cream ambient light
+          }
+        },
+        {
+          type: 'directional',
+          id: 'sun-light',
+          properties: {
+            intensity: 0.6,
+            color: '#FFE8D0',  // Warm sunlight
+            direction: [45, 60],  // Angle: azimuth 45°, polar 60°
+            'cast-shadows': true,
+            'shadow-intensity': 0.3
+          }
+        }
+      ])
+    }
+
+    // Listen for style.load event to apply lighting
+    map.on('style.load', handleStyleLoad)
+
+    // If style is already loaded, apply immediately
+    if (map.isStyleLoaded()) {
+      handleStyleLoad()
+    }
+
+    return () => {
+      map.off('style.load', handleStyleLoad)
+    }
+  }, [])
+
   return (
     <div className="w-full h-screen touch-none">
       <MapGL
+        ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapStyle="mapbox://styles/mapbox/streets-v12"
@@ -558,7 +604,66 @@ export default function WeddingMap({
         dragRotate={true}
         keyboard={false}
       >
-        {/* 3D Buildings Layer */}
+        {/* Custom Background - Cream tinted land */}
+        <Layer
+          id="custom-background"
+          type="background"
+          paint={{
+            'background-color': '#F9F7F4'  // Gray-50 from design guide
+          }}
+        />
+
+        {/* Custom Water - Soft blue-gray to complement burgundy/cream */}
+        <Layer
+          id="custom-water"
+          type="fill"
+          source="composite"
+          source-layer="water"
+          paint={{
+            'fill-color': '#C8D8E4',
+            'fill-opacity': 0.7
+          }}
+        />
+
+        {/* Custom Parks - Muted green with warm tones */}
+        <Layer
+          id="custom-parks"
+          type="fill"
+          source="composite"
+          source-layer="landuse"
+          filter={['in', 'class', 'park', 'grass', 'wood']}
+          paint={{
+            'fill-color': '#E5E8D8',
+            'fill-opacity': 0.8
+          }}
+        />
+
+        {/* Custom Roads - Burgundy-tinted roads */}
+        <Layer
+          id="custom-roads"
+          type="line"
+          source="composite"
+          source-layer="road"
+          paint={{
+            'line-color': [
+              'match',
+              ['get', 'class'],
+              'motorway', '#9B6F60',      // Burgundy for highways
+              'trunk', '#B89080',         // Lighter for major roads
+              'primary', '#D4B5A0',       // Cream-ish for primary roads
+              '#E8D4BB'                   // Light cream for other roads
+            ],
+            'line-width': [
+              'interpolate',
+              ['exponential', 1.5],
+              ['zoom'],
+              5, ['match', ['get', 'class'], 'motorway', 0.5, 0.1],
+              18, ['match', ['get', 'class'], 'motorway', 32, 'trunk', 20, 'primary', 20, 10]
+            ]
+          }}
+        />
+
+        {/* Enhanced 3D Buildings Layer with burgundy/cream gradient */}
         <Layer
           id="3d-buildings"
           type="fill-extrusion"
@@ -566,7 +671,16 @@ export default function WeddingMap({
           source-layer="building"
           filter={['==', 'extrude', 'true']}
           paint={{
-            'fill-extrusion-color': '#aaa',
+            // Height-based gradient from cream to burgundy-tinted
+            'fill-extrusion-color': [
+              'interpolate',
+              ['linear'],
+              ['get', 'height'],
+              0, '#E8D4BB',      // Cream-dark for short buildings
+              50, '#D4B5A0',     // Mid-tone
+              100, '#B89080',    // Warmer mid
+              200, '#9B6F60'     // Burgundy-tinted for tall buildings
+            ],
             'fill-extrusion-height': [
               'interpolate',
               ['linear'],
@@ -585,8 +699,20 @@ export default function WeddingMap({
               15.05,
               ['get', 'min_height']
             ],
-            'fill-extrusion-opacity': 0.6
-          }}
+            'fill-extrusion-opacity': 0.6,
+            // Advanced 3D properties for realistic lighting
+            'fill-extrusion-ambient-occlusion-intensity': 0.5,
+            'fill-extrusion-ambient-occlusion-wall-radius': 3.0,
+            'fill-extrusion-ambient-occlusion-ground-radius': 6.0,
+            'fill-extrusion-ambient-occlusion-ground-attenuation': 0.8,
+            'fill-extrusion-vertical-gradient': true,
+            'fill-extrusion-cutoff-fade-range': 0.5,
+            // Ground glow for elegant effect
+            'fill-extrusion-flood-light-color': '#F5E6D3',
+            'fill-extrusion-flood-light-intensity': 0.3,
+            'fill-extrusion-flood-light-ground-radius': 5.0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any}
         />
 
         {/* Show table icon markers (always visible) */}
