@@ -6,9 +6,16 @@
       "Bash(npm test)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(git revert:*)"
+      "Bash(git revert:*)",
+      "mcp__serena__search_for_pattern",
+      "Bash(git log:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "serena"
+  ]
 }
