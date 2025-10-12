@@ -2,18 +2,23 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Meeple, MEEPLE_COLORS } from '@/components/Meeple'
+import { Meeple, MEEPLE_COLORS, type MeepleStyle } from '@/components/Meeple'
 
 interface MeepleCustomizerProps {
   userEmail: string
   currentColor: string
+  currentStyle?: MeepleStyle
 }
 
-export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCustomizerProps) {
+export default function MeepleCustomizer({
+  userEmail,
+  currentColor,
+  currentStyle = '3d'
+}: MeepleCustomizerProps) {
   const router = useRouter()
   const [selectedColor, setSelectedColor] = useState(currentColor)
+  const [selectedStyle, setSelectedStyle] = useState<MeepleStyle>(currentStyle)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
@@ -22,22 +27,24 @@ export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCust
     setSaveMessage(null)
 
     try {
-      // Update user preferences
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({
-          email: userEmail,
-          meeple_color: selectedColor,
-          updated_at: new Date().toISOString(),
-        })
+      // Update user preferences via API route
+      const response = await fetch('/api/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          meepleColor: selectedColor,
+          meepleStyle: selectedStyle,
+        }),
+      })
 
-      if (error) {
-        setSaveMessage('Failed to save meeple color. Please try again.')
+      if (!response.ok) {
+        const error = await response.json()
+        setSaveMessage(error.error || 'Failed to save meeple preferences. Please try again.')
         setIsSaving(false)
         return
       }
 
-      setSaveMessage('Meeple color saved successfully!')
+      setSaveMessage('Meeple preferences saved successfully!')
       setIsSaving(false)
 
       // Refresh the page to show updated meeple everywhere
@@ -54,11 +61,52 @@ export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCust
     <div className="space-y-6">
       {/* Current Meeple Preview */}
       <div className="flex flex-col items-center gap-4 p-6 bg-gray-50 rounded-lg">
-        <Meeple color={selectedColor} size={120} />
+        <Meeple color={selectedColor} size={120} style={selectedStyle} />
         <p className="text-sm text-gray-600">Your Meeple</p>
         <p className="text-xs text-gray-500">
           {MEEPLE_COLORS.find(c => c.value === selectedColor)?.name || 'Custom Color'}
         </p>
+      </div>
+
+      {/* Style Selector */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Choose Your Meeple Style
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setSelectedStyle('3d')}
+            className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+              selectedStyle === '3d'
+                ? 'border-primary bg-secondary scale-105'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <Meeple color={selectedColor} size={60} style="3d" />
+            <span className="text-xs font-medium text-center">
+              3D Style
+            </span>
+            <span className="text-xs text-gray-500 text-center">
+              Authentic with depth
+            </span>
+          </button>
+          <button
+            onClick={() => setSelectedStyle('flat')}
+            className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+              selectedStyle === 'flat'
+                ? 'border-primary bg-secondary scale-105'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <Meeple color={selectedColor} size={60} style="flat" />
+            <span className="text-xs font-medium text-center">
+              Flat Style
+            </span>
+            <span className="text-xs text-gray-500 text-center">
+              Classic look
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Color Selector */}
@@ -77,7 +125,7 @@ export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCust
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
               }`}
             >
-              <Meeple color={colorOption.value} size={48} />
+              <Meeple color={colorOption.value} size={48} style={selectedStyle} />
               <span className="text-xs font-medium text-center">
                 {colorOption.name}
               </span>
@@ -90,10 +138,10 @@ export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCust
       <div className="flex gap-2">
         <Button
           onClick={handleSave}
-          disabled={isSaving || selectedColor === currentColor}
+          disabled={isSaving || (selectedColor === currentColor && selectedStyle === currentStyle)}
           className="flex-1"
         >
-          {isSaving ? 'Saving...' : 'Save Meeple Color'}
+          {isSaving ? 'Saving...' : 'Save Meeple Preferences'}
         </Button>
       </div>
 
@@ -110,7 +158,7 @@ export default function MeepleCustomizer({ userEmail, currentColor }: MeepleCust
       )}
 
       <div className="text-xs text-gray-500 space-y-1">
-        <p>💡 Choose a color that represents you!</p>
+        <p>💡 Choose a color and style that represents you!</p>
         <p>✨ Your meeple will update across all your past and future check-ins.</p>
       </div>
     </div>

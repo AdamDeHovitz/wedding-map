@@ -48,8 +48,17 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
     userPreferences.map(pref => [pref.email, pref.meeple_color])
   )
 
+  // Create a map of email -> meeple_style for quick lookup
+  const meepleStyleMap = new Map(
+    userPreferences.map(pref => [pref.email, (pref.meeple_style || '3d') as '3d' | 'flat'])
+  )
+
   const getMeepleColor = (email: string) => {
     return meepleColorMap.get(email) || '#7B2D26' // Default to burgundy
+  }
+
+  const getMeepleStyle = (email: string): '3d' | 'flat' => {
+    return meepleStyleMap.get(email) || '3d' // Default to 3d
   }
 
   const handleSignIn = async () => {
@@ -279,7 +288,11 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded">
             <div className="flex-shrink-0">
-              <Meeple color={getMeepleColor(session.user?.email || '')} size={40} />
+              <Meeple
+                color={getMeepleColor(session.user?.email || '')}
+                size={40}
+                style={getMeepleStyle(session.user?.email || '')}
+              />
             </div>
             <div>
               <p className="font-medium text-sm">{session.user?.name}</p>
@@ -311,7 +324,11 @@ export default function CheckinForm({ table, existingCheckins }: CheckinFormProp
               {existingCheckins.slice(0, 5).map((checkin) => (
                 <div key={checkin.id} className="flex items-start gap-3 p-2 bg-gray-50 rounded">
                   <div className="flex-shrink-0">
-                    <Meeple color={getMeepleColor(checkin.guest_email)} size={32} />
+                    <Meeple
+                      color={getMeepleColor(checkin.guest_email)}
+                      size={32}
+                      style={getMeepleStyle(checkin.guest_email)}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{checkin.guest_name}</p>

@@ -18,6 +18,7 @@ interface TravelAnimationProps {
   endLat: number
   endLon: number
   meepleColor: string
+  meepleStyle?: '3d' | 'flat'
   onComplete?: () => void
 }
 
@@ -27,6 +28,7 @@ export function TravelAnimation({
   endLat,
   endLon,
   meepleColor,
+  meepleStyle = '3d',
   onComplete,
 }: TravelAnimationProps) {
   const [currentPosition, setCurrentPosition] = useState({ lat: startLat, lon: startLon })
@@ -221,7 +223,12 @@ export function TravelAnimation({
 
           {/* Meeple - larger and more visible */}
           <div className="transform scale-150 relative z-20">
-            <Meeple color={meepleColor} size={56} className="drop-shadow-2xl filter brightness-110" />
+            <Meeple
+              color={meepleColor}
+              size={56}
+              style={meepleStyle}
+              className="drop-shadow-2xl filter brightness-110"
+            />
           </div>
 
           {/* Trail effect */}

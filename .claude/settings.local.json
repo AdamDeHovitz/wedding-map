@@ -7,9 +7,12 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(git revert:*)",
-      "mcp__serena__search_for_pattern",
       "Bash(git log:*)",
       "Bash(gh pr create:*)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)",
+      "Read(//Users/adamdeho/Downloads/**)"
+      "mcp__serena__search_for_pattern",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
       "Bash(curl:*)"
