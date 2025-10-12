@@ -12,7 +12,7 @@ const supabase = createClient(
 )
 
 interface HomeProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function Home({ searchParams }: HomeProps) {
@@ -20,8 +20,8 @@ export default async function Home({ searchParams }: HomeProps) {
   const session = await auth()
 
   // Get search params
-  const params = await searchParams
-  const checkinTableId = params.checkin as string | undefined
+  const params = searchParams ? await searchParams : {}
+  const checkinTableId = params?.checkin as string | undefined
 
   // Fetch all wedding tables
   const { data: tables } = await supabase
