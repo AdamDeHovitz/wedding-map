@@ -179,6 +179,9 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Loading</DialogTitle>
+          </DialogHeader>
           <div className="flex items-center justify-center p-8">
             <p className="text-gray-600">Loading...</p>
           </div>
