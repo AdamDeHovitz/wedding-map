@@ -367,6 +367,9 @@ export default function WeddingMap({
       setIsEditingMessage(false)
       setEditedMessage('')
 
+      // Save current view state before refresh to prevent zoom reset
+      sessionStorage.setItem('mapViewState', JSON.stringify(viewState))
+
       // Refresh to show updated message
       router.refresh()
     } catch (error) {
