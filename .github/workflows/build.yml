@@ -1,0 +1,36 @@
+name: Build
+
+on:
+  pull_request:
+    branches: ['*']
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build
+        env:
+          # Placeholder environment variables for build
+          AUTH_SECRET: build-time-secret-placeholder-for-ci
+          NEXTAUTH_URL: http://localhost:3000
+          GOOGLE_CLIENT_ID: build-placeholder
+          GOOGLE_CLIENT_SECRET: build-placeholder
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-key
+          NEXT_PUBLIC_MAPBOX_TOKEN: placeholder-token
