@@ -216,6 +216,80 @@
     animation: unreadGlow 2s ease-in-out infinite;
   }
 
+  /* Dancing animation for meeples at the wedding venue (Rule of Thirds) */
+  @keyframes celebrationDance {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg) scale(1);
+    }
+    10% {
+      transform: translateY(-8px) rotate(-5deg) scale(1.05);
+    }
+    20% {
+      transform: translateY(-4px) rotate(5deg) scale(0.98);
+    }
+    30% {
+      transform: translateY(-10px) rotate(-3deg) scale(1.08);
+    }
+    40% {
+      transform: translateY(-2px) rotate(3deg) scale(0.95);
+    }
+    50% {
+      transform: translateY(-6px) rotate(0deg) scale(1.02);
+    }
+    60% {
+      transform: translateY(-3px) rotate(-4deg) scale(0.97);
+    }
+    70% {
+      transform: translateY(-9px) rotate(4deg) scale(1.06);
+    }
+    80% {
+      transform: translateY(-2px) rotate(-2deg) scale(0.96);
+    }
+    90% {
+      transform: translateY(-5px) rotate(2deg) scale(1.03);
+    }
+  }
+
+  .meeple-dancing {
+    animation: celebrationDance 3s ease-in-out infinite;
+    /* Add slight delay variation based on CSS custom property */
+    animation-delay: var(--dance-delay, 0s);
+  }
+
+  /* Tooltip for meeple names */
+  .meeple-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background-color: rgba(123, 45, 38, 0.95);
+    color: #F5E6D3;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 10000;
+  }
+
+  .meeple-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(123, 45, 38, 0.95);
+  }
+
+  .meeple-container:hover .meeple-tooltip {
+    opacity: 1;
+  }
+
   /* Float animation for transport icons */
   @keyframes float {
     0%, 100% {

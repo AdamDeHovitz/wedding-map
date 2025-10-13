@@ -899,6 +899,9 @@ export default function WeddingMap({
               const hasUnreadMessage = checkin && isUnreadMessage(checkin.id)
               const zIndex = hasUnreadMessage ? 1000 : 1
 
+              // Stagger dance animation delays for visual variety (0-2s range)
+              const danceDelay = `${(index * 0.15) % 2}s`
+
               return (
                 <Marker
                   key={`rot-${userPref.email}`}
@@ -924,11 +927,12 @@ export default function WeddingMap({
                   }}
                 >
                   <div
-                    className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${checkin && newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''} ${hasUnreadMessage ? 'meeple-unread' : ''}`}
+                    className={`meeple-container cursor-pointer relative transform transition-all duration-300 hover:scale-125 active:scale-110 meeple-dancing ${checkin && newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''} ${hasUnreadMessage ? 'meeple-unread' : ''}`}
                     style={{
                       ...(!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined),
-                      zIndex
-                    }}
+                      zIndex,
+                      '--dance-delay': danceDelay,
+                    } as React.CSSProperties}
                   >
                     <Meeple
                       color={userPref.meeple_color}
@@ -936,6 +940,10 @@ export default function WeddingMap({
                       style={getMeepleStyle(userPref.email)}
                       className="drop-shadow-lg"
                     />
+                    {/* Tooltip showing meeple owner's name */}
+                    <div className="meeple-tooltip">
+                      {userPref.display_name || userPref.email}
+                    </div>
                   </div>
                 </Marker>
               )
