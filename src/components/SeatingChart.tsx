@@ -51,18 +51,18 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
       'Seaview Terrace': 'seaview-terrace.png',
       'State Street': 'state-street.png',
       'Baltic Street': 'baltic-street.png',
-      'Connecticut Ave': 'connecticut-ave.png',
+      'Connecticut Avenue': 'connecticut-ave.png',
       'Boerum Place': 'boerum-place.png',
-      'River Heights': 'river-heights.png',
+      'River Heights Road': 'river-heights.png',
       'Lakewood Drive': 'lakewood-drive.png',
-      'College Ave': 'college-ave.png',
-      'Nerudova': 'nerudova-street.png',
+      'College Avenue': 'college-ave.png',
+      'Nerudova Street': 'nerudova-street.png',
       'Topping Drive': 'topping-drive.png',
-      '115th Street': 'w-115th-street.png',
+      'West 115th Street': 'w-115th-street.png',
       'Waterman Street': 'waterman-street.png',
       'John Street': 'john-street.png',
       'Clark Street': 'clark-street.png',
-      '53rd Street': 'w-53rd-street.png'
+      'West 53rd Street': 'w-53rd-street.png'
     }
     return `/table-icons/${iconMap[tableName] || 'boerum-place.png'}`
   }
