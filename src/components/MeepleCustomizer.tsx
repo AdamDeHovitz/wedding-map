@@ -6,13 +6,11 @@ import { useRouter } from 'next/navigation'
 import { Meeple, MEEPLE_COLORS, type MeepleStyle } from '@/components/Meeple'
 
 interface MeepleCustomizerProps {
-  userEmail: string
   currentColor: string
   currentStyle?: MeepleStyle
 }
 
 export default function MeepleCustomizer({
-  userEmail,
   currentColor,
   currentStyle = '3d'
 }: MeepleCustomizerProps) {

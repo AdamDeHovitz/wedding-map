@@ -62,7 +62,6 @@ export default async function SettingsPage() {
             </CardHeader>
             <CardContent>
               <MeepleCustomizer
-                userEmail={session.user.email!}
                 currentColor={preferences?.meeple_color || '#7B2D26'}
                 currentStyle={(preferences?.meeple_style as MeepleStyle) || '3d'}
               />
