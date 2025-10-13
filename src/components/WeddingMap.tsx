@@ -53,6 +53,7 @@ export default function WeddingMap({
   const [isEditingMessage, setIsEditingMessage] = useState(false)
   const [editedMessage, setEditedMessage] = useState('')
   const [isSavingMessage, setIsSavingMessage] = useState(false)
+  const [readCheckinIds, setReadCheckinIds] = useState<Set<string>>(new Set())
   const [travelAnimation, setTravelAnimation] = useState<{
     startLat: number
     startLon: number
@@ -73,6 +74,25 @@ export default function WeddingMap({
   // Threshold for switching between table icons and individual meeples
   const ZOOM_THRESHOLD = 14
   const showMeeples = viewState.zoom >= ZOOM_THRESHOLD
+
+  // Fetch read checkin IDs on mount (only for logged-in users)
+  useEffect(() => {
+    const fetchReadCheckinIds = async () => {
+      if (!currentUserEmail) return
+
+      try {
+        const response = await fetch('/api/message-reads')
+        if (response.ok) {
+          const data = await response.json()
+          setReadCheckinIds(new Set(data.readCheckinIds || []))
+        }
+      } catch (error) {
+        console.error('Error fetching read checkin IDs:', error)
+      }
+    }
+
+    fetchReadCheckinIds()
+  }, [currentUserEmail])
 
   // Create a map of email -> meeple_color for quick lookup
   const meepleColorMap = new Map(
@@ -179,7 +199,47 @@ export default function WeddingMap({
     return meepleStyleMap.get(email) || '3d' // Default to 3d
   }
 
-  // Helper to calculate meeple positions in a circle around a location
+  // Helper to mark a message as read
+  const markMessageAsRead = async (checkinId: string) => {
+    // Don't mark user's own messages as unread
+    const checkin = checkins.find(c => c.id === checkinId)
+    if (checkin?.guest_email === currentUserEmail) return
+
+    // Optimistically update UI
+    setReadCheckinIds(prev => new Set([...prev, checkinId]))
+
+    try {
+      await fetch('/api/message-reads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ checkinId }),
+      })
+    } catch (error) {
+      console.error('Error marking message as read:', error)
+      // Revert on error
+      setReadCheckinIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(checkinId)
+        return newSet
+      })
+    }
+  }
+
+  // Helper to check if a checkin message is unread
+  const isUnreadMessage = (checkinId: string) => {
+    // Only show as unread if:
+    // 1. User is logged in
+    // 2. Message hasn't been read yet
+    // 3. It's not the user's own message
+    const checkin = checkins.find(c => c.id === checkinId)
+    if (!currentUserEmail || !checkin || checkin.guest_email === currentUserEmail) {
+      return false
+    }
+    return !readCheckinIds.has(checkinId)
+  }
+
+  // Helper to calculate meeple positions distributed within a circular area
+  // Uses a deterministic pseudo-random distribution based on index for consistency
   const getMeeplePosition = (
     centerLat: number,
     centerLon: number,
@@ -195,12 +255,26 @@ export default function WeddingMap({
     const metersToLat = radiusMeters / 111000
     const metersToLon = radiusMeters / (111000 * Math.cos(centerLat * Math.PI / 180))
 
-    // Distribute meeples evenly in a circle
-    const angle = (2 * Math.PI * index) / total
+    // Use a deterministic pseudo-random function based on index
+    // This ensures positions are consistent across renders
+    const random1 = Math.sin(index * 12.9898 + 78.233) * 43758.5453
+    const random2 = Math.sin(index * 93.9898 + 12.233) * 43758.5453
+
+    const rand1 = random1 - Math.floor(random1)
+    const rand2 = random2 - Math.floor(random2)
+
+    // Use square root for uniform distribution within circle
+    // (polar coordinates with uniform angle and sqrt(uniform) radius)
+    const r = Math.sqrt(rand1) // Distance from center (0 to 1)
+    const theta = rand2 * 2 * Math.PI // Angle (0 to 2π)
+
+    // Calculate final position
+    const offsetLat = metersToLat * r * Math.cos(theta)
+    const offsetLon = metersToLon * r * Math.sin(theta)
 
     return {
-      latitude: centerLat + metersToLat * Math.cos(angle),
-      longitude: centerLon + metersToLon * Math.sin(angle)
+      latitude: centerLat + offsetLat,
+      longitude: centerLon + offsetLon
     }
   }
 
@@ -701,6 +775,9 @@ export default function WeddingMap({
               // Find if this user has a checkin at this table (for click handling)
               const checkin = table.checkins.find(c => c.guest_email === userPref.email)
 
+              const hasUnreadMessage = checkin && isUnreadMessage(checkin.id)
+              const zIndex = hasUnreadMessage ? 1000 : 1
+
               return (
                 <Marker
                   key={`rot-${userPref.email}`}
@@ -711,6 +788,11 @@ export default function WeddingMap({
                     e.originalEvent.stopPropagation()
                     // Only allow clicking if user has actually checked in (has a message/data)
                     if (checkin) {
+                      // Mark message as read when clicking
+                      if (hasUnreadMessage) {
+                        markMessageAsRead(checkin.id)
+                      }
+
                       if (selectedMeeple?.id === checkin.id) {
                         setSelectedMeeple(null)
                       } else {
@@ -721,8 +803,11 @@ export default function WeddingMap({
                   }}
                 >
                   <div
-                    className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${checkin && newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''}`}
-                    style={!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined}
+                    className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${checkin && newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''} ${hasUnreadMessage ? 'meeple-unread' : ''}`}
+                    style={{
+                      ...(!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined),
+                      zIndex
+                    }}
                   >
                     <Meeple
                       color={userPref.meeple_color}
@@ -745,6 +830,8 @@ export default function WeddingMap({
               table.checkins.length
             )
             const isCurrentlyHere = isUserCurrentlyAtLocation(checkin.guest_email, table.id)
+            const hasUnreadMessage = isUnreadMessage(checkin.id)
+            const zIndex = hasUnreadMessage ? 1000 : 1
 
             return (
               <Marker
@@ -754,6 +841,12 @@ export default function WeddingMap({
                 anchor="center"
                 onClick={e => {
                   e.originalEvent.stopPropagation()
+
+                  // Mark message as read when clicking
+                  if (hasUnreadMessage) {
+                    markMessageAsRead(checkin.id)
+                  }
+
                   // Toggle: close if already selected, open if not
                   if (selectedMeeple?.id === checkin.id) {
                     setSelectedMeeple(null)
@@ -764,8 +857,11 @@ export default function WeddingMap({
                 }}
               >
                 <div
-                  className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''}`}
-                  style={!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined}
+                  className={`cursor-pointer transform transition-all duration-300 hover:scale-125 active:scale-110 ${newMeepleIds.has(checkin.id) ? 'animate-meepleDrop' : 'animate-fadeIn'} ${!isCurrentlyHere ? 'opacity-60' : ''} ${hasUnreadMessage ? 'meeple-unread' : ''}`}
+                  style={{
+                    ...(!isCurrentlyHere ? { filter: 'saturate(0.5) brightness(1.1)' } : undefined),
+                    zIndex
+                  }}
                 >
                   <Meeple
                     color={getMeepleColor(checkin.guest_email)}

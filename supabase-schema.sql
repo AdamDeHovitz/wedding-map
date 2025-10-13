@@ -25,7 +25,9 @@ CREATE TABLE wedding_tables (
 CREATE TABLE user_preferences (
   email TEXT PRIMARY KEY, -- User's email OR username (see comment above)
   meeple_color TEXT NOT NULL, -- Color for the user's meeple (hex code)
+  meeple_style TEXT DEFAULT '3d', -- Meeple style: '3d' or 'flat'
   display_name TEXT, -- Optional: let users customize their display name
+  current_location_id TEXT, -- ID of the location the user is currently at
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

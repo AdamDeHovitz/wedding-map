@@ -93,6 +93,26 @@ export interface Database {
           checked_in_at?: string
         }
       }
+      message_reads: {
+        Row: {
+          id: string
+          reader_email: string
+          checkin_id: string
+          read_at: string
+        }
+        Insert: {
+          id?: string
+          reader_email: string
+          checkin_id: string
+          read_at?: string
+        }
+        Update: {
+          id?: string
+          reader_email?: string
+          checkin_id?: string
+          read_at?: string
+        }
+      }
     }
   }
 }
@@ -101,6 +121,8 @@ export interface Database {
 export type WeddingTable = Database['public']['Tables']['wedding_tables']['Row']
 export type GuestCheckin = Database['public']['Tables']['guest_checkins']['Row']
 export type UserPreferences = Database['public']['Tables']['user_preferences']['Row']
+export type MessageRead = Database['public']['Tables']['message_reads']['Row']
 export type NewWeddingTable = Database['public']['Tables']['wedding_tables']['Insert']
 export type NewGuestCheckin = Database['public']['Tables']['guest_checkins']['Insert']
 export type NewUserPreferences = Database['public']['Tables']['user_preferences']['Insert']
+export type NewMessageRead = Database['public']['Tables']['message_reads']['Insert']
