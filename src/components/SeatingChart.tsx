@@ -101,6 +101,9 @@ export function SeatingChart({ tables, userCheckins, onTableClick }: SeatingChar
             width={isSweetheart ? 32 : 24}
             height={isSweetheart ? 32 : 24}
             className={`${visited ? 'opacity-90' : 'opacity-80'}`}
+            style={visited ? {
+              filter: 'invert(93%) sepia(8%) saturate(365%) hue-rotate(344deg) brightness(102%) contrast(96%)'
+            } : undefined}
           />
         </div>
         <span className={`${isSweetheart ? 'text-[9px]' : 'text-[8px]'} font-semibold leading-tight`}>
