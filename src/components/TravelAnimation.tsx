@@ -18,7 +18,7 @@ interface TravelAnimationProps {
   endLat: number
   endLon: number
   meepleColor: string
-  meepleStyle?: '3d' | 'flat'
+  meepleStyle?: '3d' | 'flat' | 'bride' | 'groom'
   onComplete?: () => void
 }
 
