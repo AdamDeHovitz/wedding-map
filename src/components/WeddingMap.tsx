@@ -55,7 +55,7 @@ export default function WeddingMap({
     endLat: number
     endLon: number
     meepleColor: string
-    meepleStyle: '3d' | 'flat'
+    meepleStyle: '3d' | 'flat' | 'bride' | 'groom'
     newCheckinId: string
   } | null>(null)
   const [viewState, setViewState] = useState({
