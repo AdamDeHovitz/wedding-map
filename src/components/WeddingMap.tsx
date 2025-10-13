@@ -191,8 +191,12 @@ export default function WeddingMap({
   }
 
   // Helper to get meeple style for a user
-  const getMeepleStyle = (email: string): '3d' | 'flat' => {
-    return meepleStyleMap.get(email) || '3d' // Default to 3d
+  const getMeepleStyle = (email: string): '3d' | 'flat' | 'bride' | 'groom' => {
+    // Special wedding meeples for bride and groom
+    if (email === 'ascheibmeir12@gmail.com') return 'bride'
+    if (email === 'adam.dehovitz@gmail.com') return 'groom'
+
+    return (meepleStyleMap.get(email) as '3d' | 'flat' | 'bride' | 'groom') || '3d' // Default to 3d
   }
 
   // Helper to mark a message as read

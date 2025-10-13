@@ -45,7 +45,7 @@ export interface Database {
         Row: {
           email: string
           meeple_color: string
-          meeple_style?: string | null
+          meeple_style?: '3d' | 'flat' | 'bride' | 'groom' | string | null
           display_name: string | null
           current_location_id: string | null
           updated_at: string
