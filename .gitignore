@@ -26,7 +26,6 @@
 *.pem
 addresses
 scripts
-supabase-migrations
 
 # debug
 npm-debug.log*
