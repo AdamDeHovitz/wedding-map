@@ -1169,22 +1169,22 @@ export default function WeddingMap({
       {/* Full-screen seating chart overlay for Rule of Thirds venue */}
       {seatingChartOpen && (
         <div className="fixed inset-0 z-50 bg-gradient-to-br from-rose-50/25 to-white/25 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <button
-            onClick={() => setSeatingChartOpen(false)}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#7B2D26] hover:bg-[#7B2D26] hover:text-white transition-colors z-10"
-            aria-label="Close seating chart"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <div className="w-full max-w-3xl relative">
+            <button
+              onClick={() => setSeatingChartOpen(false)}
+              className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#7B2D26] hover:bg-[#7B2D26] hover:text-white transition-colors z-10"
+              aria-label="Close seating chart"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="w-full max-w-3xl">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             <SeatingChart
               tables={tables}
               userCheckins={currentUserEmail ? checkins.filter(c => c.guest_email === currentUserEmail) : []}
