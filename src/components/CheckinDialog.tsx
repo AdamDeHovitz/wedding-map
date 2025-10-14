@@ -263,15 +263,21 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-serif">
+          <DialogTitle className="text-2xl font-serif text-[#7B2D26]">
             {step === 'code' ? 'Verify Location' : table.name}
           </DialogTitle>
-          <DialogDescription>
-            {step === 'code'
-              ? 'Enter the code from this location to check in'
-              : table.address
-            }
-          </DialogDescription>
+          {step === 'code' && (
+            <DialogDescription>
+              Enter the code from this location to check in
+            </DialogDescription>
+          )}
+          {step === 'message' && table.description && (
+            <div className="mt-4 pt-4 border-t border-[#E8D4BB]">
+              <p className="font-sans text-[0.9375rem] leading-[1.7] tracking-wide text-[#5a4a42] italic">
+                {table.description}
+              </p>
+            </div>
+          )}
         </DialogHeader>
 
         {step === 'code' ? (

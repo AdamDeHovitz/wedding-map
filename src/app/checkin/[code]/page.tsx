@@ -14,6 +14,7 @@ export default async function CheckinPage({ params }: CheckinPageProps) {
   const codeRedirects: Record<string, string> = {
     'cannabispinoy': 'promenade',      // Clark Street old -> new
     'hoyt-schermerhorn': 'lovelove',   // State Street old -> new
+    'mertz': 'mccabe',                 // Swarthmore old -> new
   }
 
   // If this is an old code, redirect to the new code

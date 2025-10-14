@@ -49,6 +49,7 @@ export default async function Home({ searchParams }: HomeProps) {
     latitude: 40.7292,
     longitude: -73.9586,
     icon_filename: 'rule-of-thirds',
+    description: 'The venue where Anna & Adam are getting married and celebrating with all of you!',
     created_at: new Date().toISOString()
   }
 

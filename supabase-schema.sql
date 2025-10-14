@@ -10,6 +10,7 @@ CREATE TABLE wedding_tables (
   latitude DECIMAL(10, 8) NOT NULL,
   longitude DECIMAL(11, 8) NOT NULL,
   icon_filename TEXT, -- Optional: filename for table icon (without .png extension)
+  description TEXT, -- Optional: personalized description for this meaningful place
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

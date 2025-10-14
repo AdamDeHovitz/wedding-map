@@ -110,3 +110,57 @@ WHERE name IN ('Clark Street', 'State Street');
 -- Clark Street | promenade
 -- State Street | lovelove
 ```
+
+## Migration: 003 - Add Description Field
+
+**File**: `003-add-description-field.sql`
+
+**Purpose**: Adds personalized descriptions to each location table.
+
+**What it does**:
+- Adds `description` TEXT column to `wedding_tables`
+- Populates descriptions for all existing tables from the locations CSV
+- Each description tells the story of that meaningful place
+
+**Tables Modified**:
+- `wedding_tables`: Adds `description` field
+
+**Verifying Migration 003**:
+
+```sql
+-- Check that the column exists and has data
+SELECT name, unique_code, description
+FROM wedding_tables
+WHERE description IS NOT NULL
+ORDER BY name;
+```
+
+## Migration: 004 - Update Mertz to McCabe
+
+**File**: `004-update-mertz-to-mccabe.sql`
+
+**Purpose**: Updates unique code for Swarthmore table from 'mertz' to 'mccabe'.
+
+**What it does**:
+- Changes Swarthmore code from `mertz` to `mccabe`
+- Old QR codes continue to work via app-level redirects
+
+**Tables Modified**:
+- `wedding_tables`: Updates `unique_code` field for Swarthmore
+
+**Backward Compatibility**:
+The old code continues to work because the check-in page includes redirect mappings. This means:
+- Old QR codes with `mertz` will redirect to `mccabe`
+- No need to regenerate QR codes unless desired
+
+**Verifying Migration 004**:
+
+```sql
+-- Verify the code was updated
+SELECT name, unique_code, address
+FROM wedding_tables
+WHERE address LIKE '%Swarthmore%';
+
+-- Expected result:
+-- Table name | mccabe | 500 College Ave, Swarthmore, PA 19081
+```

@@ -1020,58 +1020,58 @@ export default function WeddingMap({
             className="max-w-sm"
           >
             <Card className="border-0 shadow-none">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">{selectedTable.name}</CardTitle>
-                <p className="text-sm text-gray-600">{selectedTable.address}</p>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-serif text-[#7B2D26] mb-4">
+                  {selectedTable.name}
+                </CardTitle>
+                {selectedTable.description && (
+                  <p className="font-sans text-[0.9375rem] leading-[1.7] tracking-wide text-[#5a4a42] italic">
+                    {selectedTable.description}
+                  </p>
+                )}
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-700">
-                      {selectedTable.checkins.length} guest{selectedTable.checkins.length !== 1 ? 's' : ''} here
-                    </p>
-                    {(() => {
-                      // Check if current user has checked in to this location before
-                      const hasCheckedIn = currentUserEmail && checkins.some(
-                        c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+              <CardContent className="pt-0">
+                <div className="flex flex-col gap-3">
+                  {(() => {
+                    // Check if current user has checked in to this location before
+                    const hasCheckedIn = currentUserEmail && checkins.some(
+                      c => c.guest_email === currentUserEmail && c.table_id === selectedTable.id
+                    )
+
+                    if (hasCheckedIn) {
+                      return (
+                        <Button
+                          className="w-full bg-[#7B2D26] hover:bg-[#6B1D16] text-[#F5E6D3]"
+                          onClick={() => {
+                            handleVisit(selectedTable)
+                            setSelectedTable(null)
+                          }}
+                        >
+                          Visit
+                        </Button>
                       )
+                    } else {
+                      return (
+                        <Button
+                          className="w-full bg-[#7B2D26] hover:bg-[#6B1D16] text-[#F5E6D3]"
+                          onClick={() => {
+                            setCheckinTable(selectedTable)
+                            setCheckinDialogOpen(true)
+                            setSelectedTable(null)
+                          }}
+                        >
+                          Check In
+                        </Button>
+                      )
+                    }
+                  })()}
 
-                      if (hasCheckedIn) {
-                        return (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              handleVisit(selectedTable)
-                              setSelectedTable(null)
-                            }}
-                          >
-                            Visit
-                          </Button>
-                        )
-                      } else {
-                        return (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setCheckinTable(selectedTable)
-                              setCheckinDialogOpen(true)
-                              setSelectedTable(null)
-                            }}
-                          >
-                            Check In
-                          </Button>
-                        )
-                      }
-                    })()}
-                  </div>
-
-              {selectedTable.checkins.length > 0 && (
-                <p className="text-xs text-gray-500 italic mt-3 pt-3 border-t border-gray-200">
-                  Click on meeples to see what other guests have said!
-                </p>
-              )}
-            </div>
+                  {selectedTable.checkins.length > 0 && (
+                    <p className="text-xs text-gray-500 italic text-center">
+                      Click on meeples to see messages
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </Popup>
