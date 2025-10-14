@@ -39,6 +39,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
 
   // Username login state
   const [username, setUsername] = useState('')
+  const [fullName, setFullName] = useState('')
   const [usernameError, setUsernameError] = useState('')
 
   const handleCodeSubmit = (e: React.FormEvent) => {
@@ -120,9 +121,15 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
 
     // Client-side validation (server validates too)
     const trimmedUsername = username.trim()
+    const trimmedFullName = fullName.trim()
 
     if (!trimmedUsername) {
       setUsernameError('Username is required')
+      return
+    }
+
+    if (!trimmedFullName) {
+      setUsernameError('Full name is required')
       return
     }
 
@@ -150,6 +157,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     try {
       await signIn('credentials', {
         username: trimmedUsername,
+        displayName: trimmedFullName,
         callbackUrl: window.location.href
       })
     } catch (err) {
@@ -166,6 +174,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       setCodeError('')
       setError('')
       setUsername('')
+      setFullName('')
       setUsernameError('')
       setStep(requireCode ? 'code' : 'message')
     }
@@ -219,29 +228,49 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="username-dialog" className="text-sm font-medium">
-                Choose a Username
-              </label>
-              <Input
-                id="username-dialog"
-                type="text"
-                placeholder="your_username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleUsernameSignIn()
-                  }
-                }}
-                className={usernameError ? 'border-red-500' : ''}
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="fullname-dialog" className="text-sm font-medium">
+                  Full Name
+                </label>
+                <Input
+                  id="fullname-dialog"
+                  type="text"
+                  placeholder="Jane Smith"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className={usernameError && !fullName.trim() ? 'border-red-500' : ''}
+                />
+                <p className="text-xs text-gray-500">
+                  This will be displayed on your meeple
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="username-dialog" className="text-sm font-medium">
+                  Choose a Username
+                </label>
+                <Input
+                  id="username-dialog"
+                  type="text"
+                  placeholder="your_username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && fullName.trim() && username.trim()) {
+                      handleUsernameSignIn()
+                    }
+                  }}
+                  className={usernameError ? 'border-red-500' : ''}
+                />
+                <p className="text-xs text-gray-500">
+                  3-30 characters. Letters, numbers, dashes, and underscores only. No @ symbol.
+                </p>
+              </div>
+
               {usernameError && (
                 <p className="text-sm text-red-600">{usernameError}</p>
               )}
-              <p className="text-xs text-gray-500">
-                3-30 characters. Letters, numbers, dashes, and underscores only. No @ symbol.
-              </p>
             </div>
 
             <Button
@@ -249,9 +278,9 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               variant="outline"
               className="w-full"
               size="lg"
-              disabled={!username.trim()}
+              disabled={!username.trim() || !fullName.trim()}
             >
-              Continue as {username.trim() || 'username'}
+              Continue
             </Button>
           </div>
         </DialogContent>

@@ -30,14 +30,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       name: 'Username',
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "Your unique username" }
+        username: { label: "Username", type: "text", placeholder: "Your unique username" },
+        displayName: { label: "Full Name", type: "text", placeholder: "Your full name" }
       },
       async authorize(credentials) {
         const username = credentials?.username?.toString().trim()
+        const displayName = credentials?.displayName?.toString().trim()
 
         // Validation: username required
         if (!username) {
           throw new Error('Username is required')
+        }
+
+        // Validation: display name (full name) required
+        if (!displayName) {
+          throw new Error('Full name is required')
         }
 
         // CRITICAL: Username cannot be an email to prevent collision with Google OAuth users
@@ -66,8 +73,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // The database schema uses 'email' as the primary key for user_preferences
         return {
           id: username,
-          email: username,  // Username stored in email field (see comment above)
-          name: username,   // Display name defaults to username
+          email: username,     // Username stored in email field (see comment above)
+          name: displayName,   // Full name for display (stored as display_name in user_preferences)
         }
       }
     })

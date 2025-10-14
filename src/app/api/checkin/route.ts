@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
       .eq('email', session.user.email!)
       .single()
 
+    let userMeepleColor: string
+
     if (!existingPrefs) {
       // Create user preferences with random meeple color
       const meepleColors = [
@@ -48,6 +50,7 @@ export async function POST(request: NextRequest) {
         '#0D9488', '#EA580C', '#1E293B', '#84A98C', '#86198F', '#0EA5E9'
       ]
       const randomColor = meepleColors[Math.floor(Math.random() * meepleColors.length)]
+      userMeepleColor = randomColor
 
       await supabase.from('user_preferences').insert({
         email: session.user.email!,
@@ -57,6 +60,7 @@ export async function POST(request: NextRequest) {
       })
     } else {
       // Update current location for existing user
+      userMeepleColor = existingPrefs.meeple_color
       await supabase
         .from('user_preferences')
         .update({ current_location_id: tableId })
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
       success: true,
       checkin: data,
       previousCheckin: previousCheckin,
-      meepleColor: existingPrefs?.meeple_color || null,
+      meepleColor: userMeepleColor,
     })
   } catch (error) {
     console.error('Check-in error:', error)
