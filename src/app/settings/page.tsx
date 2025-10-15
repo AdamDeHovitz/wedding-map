@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { supabase } from '@/lib/supabase'
 import MeepleCustomizer from '@/components/MeepleCustomizer'
+import LanguageSelector from '@/components/LanguageSelector'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,20 @@ export default async function SettingsPage() {
                 <label className="text-sm font-medium text-gray-700">Email</label>
                 <p className="text-gray-900">{session.user.email}</p>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Language / Jazyk</CardTitle>
+              <CardDescription>
+                Choose your preferred language / Vyberte preferovaný jazyk
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LanguageSelector
+                currentLanguage={(preferences?.preferred_language as 'en' | 'cs') || 'en'}
+              />
             </CardContent>
           </Card>
 

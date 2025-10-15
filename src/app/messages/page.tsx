@@ -4,6 +4,7 @@ import { MessagesFeed } from '@/components/MessagesFeed'
 import { WeddingTable } from '@/types/database'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,8 @@ const supabase = createClient(
 
 export default async function MessagesPage() {
   const session = await auth()
+  const t = await getTranslations('messages')
+  const tCommon = await getTranslations('common')
 
   // Fetch all check-ins with messages, ordered by most recent
   const { data: checkins } = await supabase
@@ -34,6 +37,7 @@ export default async function MessagesPage() {
     longitude: -73.9586,
     icon_filename: 'rule-of-thirds',
     description: 'The venue where Anna & Adam are getting married and celebrating with all of you!',
+    description_cs: 'Místo, kde se Anna a Adam berou a slaví s vámi všemi!',
     created_at: new Date().toISOString()
   }
 
@@ -70,13 +74,13 @@ export default async function MessagesPage() {
             className="inline-flex items-center gap-2 text-[#F5E6D3] hover:text-white transition-colors mb-4 group"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-sans">Back to Map</span>
+            <span className="font-sans">{tCommon('backToMap')}</span>
           </Link>
           <h1 className="text-4xl sm:text-5xl font-serif font-bold text-center">
-            Messages from Our Meeples
+            {t('title')}
           </h1>
           <p className="text-center mt-3 font-sans text-[#E8D4BB] text-lg">
-            Leave a heart on the messages you love
+            {t('subtitle')}
           </p>
         </div>
       </div>

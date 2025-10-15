@@ -4,6 +4,7 @@ import { WeddingTable } from '@/types/database'
 import { auth } from '@/auth'
 import Link from 'next/link'
 import { Settings, MessageCircleHeart } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 // Use service role key to bypass RLS for reading all data
 const supabase = createClient(
@@ -18,6 +19,9 @@ interface HomeProps {
 export default async function Home({ searchParams }: HomeProps) {
   // Get current user session
   const session = await auth()
+
+  // Get translations
+  const t = await getTranslations('header')
 
   // Get search params
   const params = searchParams ? await searchParams : {}
@@ -50,6 +54,7 @@ export default async function Home({ searchParams }: HomeProps) {
     longitude: -73.9586,
     icon_filename: 'rule-of-thirds',
     description: 'The venue where Anna & Adam are getting married and celebrating with all of you!',
+    description_cs: 'Místo, kde se Anna a Adam berou a slaví s vámi všemi!',
     created_at: new Date().toISOString()
   }
 
@@ -61,7 +66,7 @@ export default async function Home({ searchParams }: HomeProps) {
     : null
 
   // Determine the header title
-  const headerTitle = initialTable ? initialTable.name : 'Our Special Places'
+  const headerTitle = initialTable ? initialTable.name : t('title')
 
   return (
     <div className="relative">
@@ -73,14 +78,14 @@ export default async function Home({ searchParams }: HomeProps) {
               <Link
                 href="/settings"
                 className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-[#7B2D26]/10 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Settings"
+                aria-label={t('settings')}
               >
                 <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-[#7B2D26]" />
               </Link>
               <Link
                 href="/messages"
                 className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-[#7B2D26]/10 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Messages"
+                aria-label={t('messages')}
               >
                 <MessageCircleHeart className="w-5 h-5 sm:w-6 sm:h-6 text-[#7B2D26]" />
               </Link>

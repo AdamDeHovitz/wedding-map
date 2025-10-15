@@ -330,6 +330,7 @@ export default function WeddingMap({
           meeple_color: data.meepleColor || '#7B2D26',
           display_name: checkin.guest_name,
           current_location_id: newTableId,
+          preferred_language: 'en' as 'en' | 'cs', // Default to English for new users
           updated_at: new Date().toISOString()
         }]
       }

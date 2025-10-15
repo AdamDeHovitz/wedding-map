@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { fetchWithRetry } from '@/lib/connection'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface CheckinDialogProps {
   open: boolean
@@ -31,6 +32,11 @@ interface CheckinDialogProps {
 
 export function CheckinDialog({ open, onOpenChange, table, requireCode = true, onCheckinSuccess }: CheckinDialogProps) {
   const { data: session, status } = useSession()
+  const tAuth = useTranslations('auth')
+  const tCheckin = useTranslations('checkin')
+  const tCommon = useTranslations('common')
+  const locale = useLocale()
+
   const [step, setStep] = useState<'code' | 'message'>(requireCode ? 'code' : 'message')
   const [code, setCode] = useState('')
   const [message, setMessage] = useState('')
@@ -59,7 +65,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     if (isValidCode) {
       setStep('message')
     } else {
-      setCodeError('Invalid code. Please try again.')
+      setCodeError(tCheckin('invalidCode'))
     }
   }
 
@@ -121,14 +127,14 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       if (err instanceof Error) {
         // Provide helpful error messages
         if (err.message.includes('timeout')) {
-          setError('Request timed out. Please check your connection and try again.')
+          setError(tCheckin('requestTimeout'))
         } else if (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Network')) {
-          setError('Network error. Please try again.')
+          setError(tCheckin('networkError'))
         } else {
           setError(err.message)
         }
       } else {
-        setError('Something went wrong. Please try again.')
+        setError(tCheckin('failed'))
       }
     } finally {
       setIsSubmitting(false)
@@ -150,33 +156,33 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     const trimmedFullName = fullName.trim()
 
     if (!trimmedUsername) {
-      setUsernameError('Username is required')
+      setUsernameError(tAuth('usernameRequired'))
       return
     }
 
     if (!trimmedFullName) {
-      setUsernameError('Full name is required')
+      setUsernameError(tAuth('fullNameRequired'))
       return
     }
 
     if (trimmedUsername.includes('@')) {
-      setUsernameError('Username cannot contain @ symbol')
+      setUsernameError(tAuth('usernameNoAt'))
       return
     }
 
     if (trimmedUsername.length < 3) {
-      setUsernameError('Username must be at least 3 characters')
+      setUsernameError(tAuth('usernameMinLength'))
       return
     }
 
     if (trimmedUsername.length > 30) {
-      setUsernameError('Username must be 30 characters or less')
+      setUsernameError(tAuth('usernameMaxLength'))
       return
     }
 
     const validPattern = /^[a-zA-Z0-9_-]+$/
     if (!validPattern.test(trimmedUsername)) {
-      setUsernameError('Username can only contain letters, numbers, underscores, and dashes')
+      setUsernameError(tAuth('usernameInvalidChars'))
       return
     }
 
@@ -215,10 +221,10 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="sr-only">Loading</DialogTitle>
+            <DialogTitle className="sr-only">{tCommon('loading')}</DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center p-8">
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-gray-600">{tCommon('loading')}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -231,9 +237,9 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-serif">Sign In to Check In</DialogTitle>
+            <DialogTitle className="text-2xl font-serif">{tAuth('signInToCheckIn')}</DialogTitle>
             <DialogDescription>
-              Sign in with Google or choose a username to leave your mark at {table.name}
+              {tAuth('signInDescription', { location: table.name })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -242,7 +248,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               className="w-full"
               size="lg"
             >
-              Sign In with Google
+              {tAuth('signInWithGoogle')}
             </Button>
 
             <div className="relative">
@@ -250,36 +256,36 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">Or</span>
+                <span className="bg-white px-2 text-muted-foreground">{tAuth('or')}</span>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="fullname-dialog" className="text-sm font-medium">
-                  Full Name
+                  {tAuth('fullName')}
                 </label>
                 <Input
                   id="fullname-dialog"
                   type="text"
-                  placeholder="Jane Smith"
+                  placeholder={tAuth('fullNamePlaceholder')}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className={usernameError && !fullName.trim() ? 'border-red-500' : ''}
                 />
                 <p className="text-xs text-gray-500">
-                  This will be displayed on your meeple
+                  {tAuth('fullNameHelp')}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="username-dialog" className="text-sm font-medium">
-                  Choose a Username
+                  {tAuth('username')}
                 </label>
                 <Input
                   id="username-dialog"
                   type="text"
-                  placeholder="your_username"
+                  placeholder={tAuth('usernamePlaceholder')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyDown={(e) => {
@@ -290,7 +296,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
                   className={usernameError ? 'border-red-500' : ''}
                 />
                 <p className="text-xs text-gray-500">
-                  3-30 characters. Letters, numbers, dashes, and underscores only. No @ symbol.
+                  {tAuth('usernameHelp')}
                 </p>
               </div>
 
@@ -306,7 +312,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               size="lg"
               disabled={!username.trim() || !fullName.trim()}
             >
-              Continue
+              {tAuth('continue')}
             </Button>
           </div>
         </DialogContent>
@@ -314,22 +320,25 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     )
   }
 
+  // Get the appropriate description based on locale
+  const description = locale === 'cs' && table.description_cs ? table.description_cs : table.description
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-serif text-[#7B2D26]">
-            {step === 'code' ? 'Verify Location' : table.name}
+            {step === 'code' ? tCheckin('verifyLocation') : table.name}
           </DialogTitle>
           {step === 'code' && (
             <DialogDescription>
-              Enter the code from this location to check in
+              {tCheckin('enterCode')}
             </DialogDescription>
           )}
-          {step === 'message' && table.description && (
+          {step === 'message' && description && (
             <div className="mt-4 pt-4 border-t border-[#E8D4BB]">
               <p className="font-sans text-[0.9375rem] leading-[1.7] tracking-wide text-[#5a4a42] italic">
-                {table.description}
+                {description}
               </p>
             </div>
           )}
@@ -340,7 +349,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
             <div className="space-y-2">
               <Input
                 type="text"
-                placeholder="Enter location code"
+                placeholder={tCheckin('enterCodePlaceholder')}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 className="text-lg"
@@ -351,14 +360,14 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               )}
             </div>
             <Button type="submit" className="w-full" size="lg">
-              Verify Code
+              {tCheckin('verifyCode')}
             </Button>
           </form>
         ) : (
           <form onSubmit={handleMessageSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
               <Textarea
-                placeholder={`Share a message for the couple, a memory of ${table.name}, or whatever comes to mind!`}
+                placeholder={tCheckin('messagePlaceholder', { location: table.name })}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
@@ -375,7 +384,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               size="lg"
               disabled={isSubmitting}
             >
-              {isRetrying ? 'Connection slow, retrying...' : isSubmitting ? 'Checking in...' : 'Check In'}
+              {isRetrying ? tCheckin('connectionSlow') : isSubmitting ? tCheckin('checkingIn') : tCheckin('checkIn')}
             </Button>
           </form>
         )}

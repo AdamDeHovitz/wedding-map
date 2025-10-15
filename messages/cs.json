@@ -1,0 +1,94 @@
+{
+  "common": {
+    "loading": "Načítání...",
+    "save": "Uložit",
+    "saving": "Ukládání...",
+    "cancel": "Zrušit",
+    "edit": "Upravit",
+    "delete": "Smazat",
+    "backToMap": "Zpět na mapu",
+    "close": "Zavřít"
+  },
+  "header": {
+    "title": "Naše Zvláštní Místa",
+    "settings": "Nastavení",
+    "messages": "Zprávy"
+  },
+  "auth": {
+    "signInToCheckIn": "Přihlaste se pro registraci",
+    "signInDescription": "Přihlaste se pomocí Google nebo si zvolte uživatelské jméno, abyste zanechali stopu v {location}",
+    "signInWithGoogle": "Přihlásit se přes Google",
+    "or": "Nebo",
+    "fullName": "Celé jméno",
+    "fullNamePlaceholder": "Jana Nováková",
+    "fullNameHelp": "Toto jméno se zobrazí na vašem meeple",
+    "username": "Zvolte uživatelské jméno",
+    "usernamePlaceholder": "vase_jmeno",
+    "usernameHelp": "3-30 znaků. Pouze písmena, číslice, pomlčky a podtržítka. Žádný symbol @.",
+    "continue": "Pokračovat",
+    "usernameRequired": "Uživatelské jméno je povinné",
+    "fullNameRequired": "Celé jméno je povinné",
+    "usernameNoAt": "Uživatelské jméno nemůže obsahovat symbol @",
+    "usernameMinLength": "Uživatelské jméno musí mít alespoň 3 znaky",
+    "usernameMaxLength": "Uživatelské jméno nesmí být delší než 30 znaků",
+    "usernameInvalidChars": "Uživatelské jméno může obsahovat pouze písmena, číslice, podtržítka a pomlčky"
+  },
+  "checkin": {
+    "verifyLocation": "Ověřit místo",
+    "enterCode": "Zadejte kód z tohoto místa pro registraci",
+    "enterCodePlaceholder": "Zadejte kód místa",
+    "verifyCode": "Ověřit kód",
+    "invalidCode": "Neplatný kód. Zkuste to znovu.",
+    "messagePlaceholder": "Sdílejte zprávu pro novomanžele, vzpomínku na {location}, nebo cokoliv, co vás napadne!",
+    "checkIn": "Registrovat se",
+    "checkingIn": "Registruji...",
+    "connectionSlow": "Pomalé připojení, opakuji...",
+    "offline": "Vypadá to, že jste offline. Zkontrolujte své připojení.",
+    "requestTimeout": "Vypršel časový limit požadavku. Zkontrolujte připojení a zkuste to znovu.",
+    "networkError": "Chyba sítě. Zkuste to znovu.",
+    "failed": "Něco se pokazilo. Zkuste to znovu.",
+    "visit": "Navštívit"
+  },
+  "messages": {
+    "title": "Zprávy od našich meeples",
+    "subtitle": "Dejte srdíčko zprávám, které milujete",
+    "sortBy": "Seřadit:",
+    "mostRecent": "Nejnovější",
+    "mostHearts": "Nejvíce srdíček",
+    "show": "Zobrazit:",
+    "allCheckins": "Všechny registrace",
+    "withMessages": "Se zprávami",
+    "noMessages": "Zatím žádné zprávy",
+    "noMessagesDescription": "Buďte první, kdo se zaregistruje a zanechá zprávu!",
+    "tryAllCheckins": "Zkuste zobrazit všechny registrace",
+    "heartTooltip": "Dát srdíčko této zprávě",
+    "clickMeeples": "Klikněte na meeples pro zobrazení zpráv",
+    "signInToHeart": "Přihlaste se prosím pro dávání srdíček"
+  },
+  "settings": {
+    "title": "Nastavení",
+    "meepleColor": "Vyberte barvu svého meeple",
+    "language": "Jazyk",
+    "english": "English (Angličtina)",
+    "czech": "Čeština",
+    "saveColor": "Uložit barvu meeple",
+    "colorSaved": "Předvolby meeple úspěšně uloženy!",
+    "colorFailed": "Nepodařilo se uložit předvolby meeple. Zkuste to znovu.",
+    "colorTip": "💡 Vyberte barvu, která vás reprezentuje!",
+    "colorUpdate": "✨ Váš meeple se aktualizuje ve všech vašich minulých i budoucích registracích."
+  },
+  "map": {
+    "clickToCheckIn": "Klikněte na meeples pro zobrazení zpráv"
+  },
+  "seatingChart": {
+    "title": "Plánek stolu"
+  },
+  "locations": {
+    "ruleOfThirds": "Místo, kde se Anna a Adam berou a slaví s vámi všemi!"
+  },
+  "editMessage": {
+    "edit": "Upravit zprávu",
+    "placeholder": "Zadejte svou zprávu...",
+    "characterCount": "{count}/280 znaků"
+  }
+}

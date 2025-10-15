@@ -1,0 +1,94 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "backToMap": "Back to Map",
+    "close": "Close"
+  },
+  "header": {
+    "title": "Our Special Places",
+    "settings": "Settings",
+    "messages": "Messages"
+  },
+  "auth": {
+    "signInToCheckIn": "Sign In to Check In",
+    "signInDescription": "Sign in with Google or choose a username to leave your mark at {location}",
+    "signInWithGoogle": "Sign In with Google",
+    "or": "Or",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Jane Smith",
+    "fullNameHelp": "This will be displayed on your meeple",
+    "username": "Choose a Username",
+    "usernamePlaceholder": "your_username",
+    "usernameHelp": "3-30 characters. Letters, numbers, dashes, and underscores only. No @ symbol.",
+    "continue": "Continue",
+    "usernameRequired": "Username is required",
+    "fullNameRequired": "Full name is required",
+    "usernameNoAt": "Username cannot contain @ symbol",
+    "usernameMinLength": "Username must be at least 3 characters",
+    "usernameMaxLength": "Username must be 30 characters or less",
+    "usernameInvalidChars": "Username can only contain letters, numbers, underscores, and dashes"
+  },
+  "checkin": {
+    "verifyLocation": "Verify Location",
+    "enterCode": "Enter the code from this location to check in",
+    "enterCodePlaceholder": "Enter location code",
+    "verifyCode": "Verify Code",
+    "invalidCode": "Invalid code. Please try again.",
+    "messagePlaceholder": "Share a message for the couple, a memory of {location}, or whatever comes to mind!",
+    "checkIn": "Check In",
+    "checkingIn": "Checking in...",
+    "connectionSlow": "Connection slow, retrying...",
+    "offline": "You appear to be offline. Please check your connection.",
+    "requestTimeout": "Request timed out. Please check your connection and try again.",
+    "networkError": "Network error. Please try again.",
+    "failed": "Something went wrong. Please try again.",
+    "visit": "Visit"
+  },
+  "messages": {
+    "title": "Messages from Our Meeples",
+    "subtitle": "Leave a heart on the messages you love",
+    "sortBy": "Sort:",
+    "mostRecent": "Most Recent",
+    "mostHearts": "Most Hearts",
+    "show": "Show:",
+    "allCheckins": "All Check-ins",
+    "withMessages": "With Messages",
+    "noMessages": "No messages yet",
+    "noMessagesDescription": "Be the first to check in and leave a message!",
+    "tryAllCheckins": "Try viewing all check-ins",
+    "heartTooltip": "Heart this message",
+    "clickMeeples": "Click on meeples to see messages",
+    "signInToHeart": "Please sign in to heart messages"
+  },
+  "settings": {
+    "title": "Settings",
+    "meepleColor": "Choose Your Meeple Color",
+    "language": "Language",
+    "english": "English",
+    "czech": "Čeština (Czech)",
+    "saveColor": "Save Meeple Color",
+    "colorSaved": "Meeple preferences saved successfully!",
+    "colorFailed": "Failed to save meeple preferences. Please try again.",
+    "colorTip": "💡 Choose a color that represents you!",
+    "colorUpdate": "✨ Your meeple will update across all your past and future check-ins."
+  },
+  "map": {
+    "clickToCheckIn": "Click on meeples to see messages"
+  },
+  "seatingChart": {
+    "title": "Seating Chart"
+  },
+  "locations": {
+    "ruleOfThirds": "The venue where Anna & Adam are getting married and celebrating with all of you!"
+  },
+  "editMessage": {
+    "edit": "Edit Message",
+    "placeholder": "Enter your message...",
+    "characterCount": "{count}/280 characters"
+  }
+}

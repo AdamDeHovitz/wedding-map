@@ -20,6 +20,7 @@ export interface Database {
           created_at: string
           icon_filename: string | null
           description: string | null
+          description_cs: string | null
         }
         Insert: {
           id?: string
@@ -31,6 +32,7 @@ export interface Database {
           created_at?: string
           icon_filename?: string | null
           description?: string | null
+          description_cs?: string | null
         }
         Update: {
           id?: string
@@ -42,6 +44,7 @@ export interface Database {
           created_at?: string
           icon_filename?: string | null
           description?: string | null
+          description_cs?: string | null
         }
       }
       user_preferences: {
@@ -51,6 +54,7 @@ export interface Database {
           meeple_style?: '3d' | 'flat' | 'bride' | 'groom' | string | null
           display_name: string | null
           current_location_id: string | null
+          preferred_language: 'en' | 'cs'
           updated_at: string
         }
         Insert: {
@@ -59,6 +63,7 @@ export interface Database {
           meeple_style?: string | null
           display_name?: string | null
           current_location_id?: string | null
+          preferred_language?: 'en' | 'cs'
           updated_at?: string
         }
         Update: {
@@ -67,6 +72,7 @@ export interface Database {
           meeple_style?: string | null
           display_name?: string | null
           current_location_id?: string | null
+          preferred_language?: 'en' | 'cs'
           updated_at?: string
         }
       }

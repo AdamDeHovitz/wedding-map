@@ -20,32 +20,57 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
-    const { meepleColor, meepleStyle } = body
+    const { meepleColor, meepleStyle, preferredLanguage } = body
 
-    // Validate inputs
-    if (!meepleColor || typeof meepleColor !== 'string') {
-      return NextResponse.json(
-        { error: 'Invalid meeple color' },
-        { status: 400 }
-      )
+    // Build update object - only include fields that are provided
+    const updateData: {
+      email: string
+      meeple_color?: string
+      meeple_style?: string
+      preferred_language?: 'en' | 'cs'
+      updated_at: string
+    } = {
+      email: session.user.email,
+      updated_at: new Date().toISOString(),
     }
 
-    if (meepleStyle && !['3d', 'flat'].includes(meepleStyle)) {
-      return NextResponse.json(
-        { error: 'Invalid meeple style. Must be "3d" or "flat"' },
-        { status: 400 }
-      )
+    // Validate and add meeple color if provided
+    if (meepleColor !== undefined) {
+      if (typeof meepleColor !== 'string') {
+        return NextResponse.json(
+          { error: 'Invalid meeple color' },
+          { status: 400 }
+        )
+      }
+      updateData.meeple_color = meepleColor
+    }
+
+    // Validate and add meeple style if provided
+    if (meepleStyle !== undefined) {
+      if (!['3d', 'flat', 'bride', 'groom'].includes(meepleStyle)) {
+        return NextResponse.json(
+          { error: 'Invalid meeple style' },
+          { status: 400 }
+        )
+      }
+      updateData.meeple_style = meepleStyle
+    }
+
+    // Validate and add language preference if provided
+    if (preferredLanguage !== undefined) {
+      if (!['en', 'cs'].includes(preferredLanguage)) {
+        return NextResponse.json(
+          { error: 'Invalid language. Must be "en" or "cs"' },
+          { status: 400 }
+        )
+      }
+      updateData.preferred_language = preferredLanguage
     }
 
     // Update user preferences
     const { error } = await supabase
       .from('user_preferences')
-      .upsert({
-        email: session.user.email,
-        meeple_color: meepleColor,
-        meeple_style: meepleStyle || '3d',
-        updated_at: new Date().toISOString(),
-      })
+      .upsert(updateData)
 
     if (error) {
       console.error('Supabase error:', error)

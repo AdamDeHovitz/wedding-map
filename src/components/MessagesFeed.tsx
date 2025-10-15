@@ -5,6 +5,8 @@ import { GuestCheckin, WeddingTable, UserPreferences, MessageHeart } from '@/typ
 import { Meeple } from '@/components/Meeple'
 import { Heart, MapPin, Calendar } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { cs } from 'date-fns/locale'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface MessagesFeedProps {
   checkins: GuestCheckin[]
@@ -26,6 +28,10 @@ export function MessagesFeed({
   userHearts: initialUserHearts,
   currentUserEmail,
 }: MessagesFeedProps) {
+  const t = useTranslations('messages')
+  const locale = useLocale()
+  const dateLocale = locale === 'cs' ? cs : undefined
+
   const [sortBy, setSortBy] = useState<SortOption>('recent')
   const [filterBy, setFilterBy] = useState<FilterOption>('all')
   const [hearts, setHearts] = useState(initialHearts)
@@ -56,7 +62,7 @@ export function MessagesFeed({
   // Handle heart toggle
   const handleHeartToggle = async (checkinId: string) => {
     if (!currentUserEmail) {
-      alert('Please sign in to heart messages')
+      alert(t('signInToHeart'))
       return
     }
 
@@ -126,7 +132,7 @@ export function MessagesFeed({
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-8 bg-white p-4 rounded-2xl shadow-sm border border-[#E8D4BB]">
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-semibold text-[#7B2D26] font-sans">Sort:</span>
+          <span className="text-sm font-semibold text-[#7B2D26] font-sans">{t('sortBy')}</span>
           <button
             onClick={() => setSortBy('recent')}
             className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${
@@ -135,7 +141,7 @@ export function MessagesFeed({
                 : 'bg-[#F9F7F4] text-[#7B2D26] hover:bg-[#E8D4BB]'
             }`}
           >
-            Most Recent
+            {t('mostRecent')}
           </button>
           <button
             onClick={() => setSortBy('hearts')}
@@ -145,12 +151,12 @@ export function MessagesFeed({
                 : 'bg-[#F9F7F4] text-[#7B2D26] hover:bg-[#E8D4BB]'
             }`}
           >
-            Most Hearts
+            {t('mostHearts')}
           </button>
         </div>
 
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-semibold text-[#7B2D26] font-sans">Show:</span>
+          <span className="text-sm font-semibold text-[#7B2D26] font-sans">{t('show')}</span>
           <button
             onClick={() => setFilterBy('all')}
             className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${
@@ -159,7 +165,7 @@ export function MessagesFeed({
                 : 'bg-[#F9F7F4] text-[#7B2D26] hover:bg-[#E8D4BB]'
             }`}
           >
-            All Check-ins
+            {t('allCheckins')}
           </button>
           <button
             onClick={() => setFilterBy('with-message')}
@@ -169,7 +175,7 @@ export function MessagesFeed({
                 : 'bg-[#F9F7F4] text-[#7B2D26] hover:bg-[#E8D4BB]'
             }`}
           >
-            With Messages
+            {t('withMessages')}
           </button>
         </div>
       </div>
@@ -178,11 +184,11 @@ export function MessagesFeed({
       <div className="space-y-4">
         {sortedCheckins.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-2xl font-serif text-[#7B2D26] mb-2">No messages yet</p>
+            <p className="text-2xl font-serif text-[#7B2D26] mb-2">{t('noMessages')}</p>
             <p className="text-gray-600 font-sans">
               {filterBy === 'with-message'
-                ? 'Try viewing all check-ins'
-                : 'Be the first to check in and leave a message!'}
+                ? t('tryAllCheckins')
+                : t('noMessagesDescription')}
             </p>
           </div>
         ) : (
@@ -253,7 +259,7 @@ export function MessagesFeed({
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                       <Calendar className="w-3 h-3" />
                       <span className="font-sans">
-                        {formatDistanceToNow(new Date(checkin.checked_in_at), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(checkin.checked_in_at), { addSuffix: true, locale: dateLocale })}
                       </span>
                     </div>
                   </div>
