@@ -69,22 +69,22 @@ export default async function Home({ searchParams }: HomeProps) {
         <div className="bg-white/90 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 rounded-full shadow-lg relative pointer-events-auto">
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#7B2D26] text-center">{headerTitle}</h1>
           {session?.user && (
-            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex gap-1">
-              <Link
-                href="/messages"
-                className="p-2 hover:bg-[#7B2D26]/10 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Messages"
-              >
-                <MessageCircleHeart className="w-5 h-5 sm:w-6 sm:h-6 text-[#7B2D26]" />
-              </Link>
+            <>
               <Link
                 href="/settings"
-                className="p-2 hover:bg-[#7B2D26]/10 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-[#7B2D26]/10 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Settings"
               >
                 <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-[#7B2D26]" />
               </Link>
-            </div>
+              <Link
+                href="/messages"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-[#7B2D26]/10 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Messages"
+              >
+                <MessageCircleHeart className="w-5 h-5 sm:w-6 sm:h-6 text-[#7B2D26]" />
+              </Link>
+            </>
           )}
         </div>
       </div>
