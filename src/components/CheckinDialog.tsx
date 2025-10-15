@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { fetchWithRetry } from '@/lib/connection'
 
 interface CheckinDialogProps {
   open: boolean
@@ -34,6 +35,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
   const [code, setCode] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRetrying, setIsRetrying] = useState(false)
   const [error, setError] = useState('')
   const [codeError, setCodeError] = useState('')
 
@@ -65,18 +67,29 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
     e.preventDefault()
     setError('')
     setIsSubmitting(true)
+    setIsRetrying(false)
 
     if (!table) return
 
     try {
-      const response = await fetch('/api/checkin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableId: table.id,
-          message: message.trim(),
-        }),
-      })
+      // Use retry logic for resilient connectivity (1 quick retry on failure)
+      const response = await fetchWithRetry(
+        '/api/checkin',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tableId: table.id,
+            message: message.trim(),
+          }),
+        },
+        1,
+        (attempt) => {
+          // Show retry status to user
+          setIsRetrying(true)
+          console.log(`Retrying check-in (attempt ${attempt})...`)
+        }
+      )
 
       const data = await response.json()
 
@@ -103,10 +116,23 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       setMessage('')
       setCode('')
       setStep(requireCode ? 'code' : 'message')
+      setIsRetrying(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      if (err instanceof Error) {
+        // Provide helpful error messages
+        if (err.message.includes('timeout')) {
+          setError('Request timed out. Please check your connection and try again.')
+        } else if (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Network')) {
+          setError('Network error. Please try again.')
+        } else {
+          setError(err.message)
+        }
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } finally {
       setIsSubmitting(false)
+      setIsRetrying(false)
     }
   }
 
@@ -349,7 +375,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
               size="lg"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Checking in...' : 'Check In'}
+              {isRetrying ? 'Connection slow, retrying...' : isSubmitting ? 'Checking in...' : 'Check In'}
             </Button>
           </form>
         )}
