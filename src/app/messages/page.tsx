@@ -73,10 +73,10 @@ export default async function MessagesPage() {
             <span className="font-sans">Back to Map</span>
           </Link>
           <h1 className="text-4xl sm:text-5xl font-serif font-bold text-center">
-            Messages from Our Journey
+            Messages from Our Meeples
           </h1>
           <p className="text-center mt-3 font-sans text-[#E8D4BB] text-lg">
-            Share the love and leave a heart on your favorite memories
+            Leave a heart on the messages you love
           </p>
         </div>
       </div>
