@@ -12,11 +12,10 @@ interface MeepleCustomizerProps {
 
 export default function MeepleCustomizer({
   currentColor,
-  currentStyle = '3d'
 }: MeepleCustomizerProps) {
   const router = useRouter()
   const [selectedColor, setSelectedColor] = useState(currentColor)
-  const [selectedStyle, setSelectedStyle] = useState<MeepleStyle>(currentStyle)
+  const selectedStyle: MeepleStyle = '3d' // Always use 3D style
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
@@ -31,7 +30,7 @@ export default function MeepleCustomizer({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           meepleColor: selectedColor,
-          meepleStyle: selectedStyle,
+          meepleStyle: '3d', // Always save as 3D
         }),
       })
 
@@ -66,47 +65,6 @@ export default function MeepleCustomizer({
         </p>
       </div>
 
-      {/* Style Selector */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Choose Your Meeple Style
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => setSelectedStyle('3d')}
-            className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
-              selectedStyle === '3d'
-                ? 'border-primary bg-secondary scale-105'
-                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <Meeple color={selectedColor} size={60} style="3d" />
-            <span className="text-xs font-medium text-center">
-              3D Style
-            </span>
-            <span className="text-xs text-gray-500 text-center">
-              Authentic with depth
-            </span>
-          </button>
-          <button
-            onClick={() => setSelectedStyle('flat')}
-            className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
-              selectedStyle === 'flat'
-                ? 'border-primary bg-secondary scale-105'
-                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <Meeple color={selectedColor} size={60} style="flat" />
-            <span className="text-xs font-medium text-center">
-              Flat Style
-            </span>
-            <span className="text-xs text-gray-500 text-center">
-              Classic look
-            </span>
-          </button>
-        </div>
-      </div>
-
       {/* Color Selector */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -136,10 +94,10 @@ export default function MeepleCustomizer({
       <div className="flex gap-2">
         <Button
           onClick={handleSave}
-          disabled={isSaving || (selectedColor === currentColor && selectedStyle === currentStyle)}
+          disabled={isSaving || selectedColor === currentColor}
           className="flex-1"
         >
-          {isSaving ? 'Saving...' : 'Save Meeple Preferences'}
+          {isSaving ? 'Saving...' : 'Save Meeple Color'}
         </Button>
       </div>
 

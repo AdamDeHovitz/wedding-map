@@ -21,7 +21,7 @@ export const MEEPLE_COLORS = [
 ] as const
 
 export type MeepleColor = typeof MEEPLE_COLORS[number]['value']
-export type MeepleStyle = '3d' | 'flat' | 'bride' | 'groom'
+export type MeepleStyle = '3d' | 'bride' | 'groom'
 
 export function Meeple({ color, size = 40, className = '', style = '3d' }: MeepleProps) {
   // Bride style: white wedding dress with veil and elegant details
@@ -250,66 +250,7 @@ export function Meeple({ color, size = 40, className = '', style = '3d' }: Meepl
     )
   }
 
-  // Flat style: original rounded shapes
-  if (style === 'flat') {
-    return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 100 100"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={className}
-      >
-        {/* Standard Carcassonne meeple shape */}
-        <g>
-          {/* Head */}
-          <circle cx="50" cy="20" r="10" fill={color} />
-
-          {/* Body (torso) */}
-          <ellipse cx="50" cy="50" rx="16" ry="22" fill={color} />
-
-          {/* Left arm */}
-          <ellipse
-            cx="32"
-            cy="45"
-            rx="8"
-            ry="5"
-            fill={color}
-            transform="rotate(-30 32 45)"
-          />
-
-          {/* Right arm */}
-          <ellipse
-            cx="68"
-            cy="45"
-            rx="8"
-            ry="5"
-            fill={color}
-            transform="rotate(30 68 45)"
-          />
-
-          {/* Left leg */}
-          <ellipse cx="40" cy="78" rx="7" ry="14" fill={color} />
-
-          {/* Right leg */}
-          <ellipse cx="60" cy="78" rx="7" ry="14" fill={color} />
-        </g>
-
-        {/* Outline for better visibility */}
-        <g stroke="#000000" strokeWidth="1.5" opacity="0.3" fill="none">
-          <circle cx="50" cy="20" r="10" />
-          <ellipse cx="50" cy="50" rx="16" ry="22" />
-          <ellipse cx="32" cy="45" rx="8" ry="5" transform="rotate(-30 32 45)" />
-          <ellipse cx="68" cy="45" rx="8" ry="5" transform="rotate(30 68 45)" />
-          <ellipse cx="40" cy="78" rx="7" ry="14" />
-          <ellipse cx="60" cy="78" rx="7" ry="14" />
-        </g>
-      </svg>
-    )
-  }
-
-  // 3D style: authentic meeple with layered depth
+  // 3D style: authentic meeple with layered depth (default)
   // Use subtle darkening for depth layers only - keep top face pure color
   const layer1 = adjustColorBrightness(color, -8)
   const layer2 = adjustColorBrightness(color, -12)
