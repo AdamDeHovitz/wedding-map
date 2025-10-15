@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SeatingChart } from '@/components/SeatingChart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface WeddingMapProps {
   tables: WeddingTable[]
@@ -35,6 +36,11 @@ export default function WeddingMap({
   currentUserEmail = null
 }: WeddingMapProps) {
   const router = useRouter()
+  const tCheckin = useTranslations('checkin')
+  const tCommon = useTranslations('common')
+  const tMap = useTranslations('map')
+  const tEditMessage = useTranslations('editMessage')
+  const locale = useLocale()
   const [selectedTable, setSelectedTable] = useState<TableWithCheckins | null>(null)
   const [selectedMeeple, setSelectedMeeple] = useState<GuestCheckin | null>(null)
   const [checkinDialogOpen, setCheckinDialogOpen] = useState(showCheckinDialog)
@@ -1025,11 +1031,16 @@ export default function WeddingMap({
                 <CardTitle className="text-xl font-serif text-[#7B2D26] mb-4">
                   {selectedTable.name}
                 </CardTitle>
-                {selectedTable.description && (
-                  <p className="font-sans text-[0.9375rem] leading-[1.7] tracking-wide text-[#5a4a42] italic">
-                    {selectedTable.description}
-                  </p>
-                )}
+                {(() => {
+                  const description = locale === 'cs' && selectedTable.description_cs
+                    ? selectedTable.description_cs
+                    : selectedTable.description
+                  return description ? (
+                    <p className="font-sans text-[0.9375rem] leading-[1.7] tracking-wide text-[#5a4a42] italic">
+                      {description}
+                    </p>
+                  ) : null
+                })()}
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="flex flex-col gap-3">
@@ -1048,7 +1059,7 @@ export default function WeddingMap({
                             setSelectedTable(null)
                           }}
                         >
-                          Visit
+                          {tCheckin('visit')}
                         </Button>
                       )
                     } else {
@@ -1061,7 +1072,7 @@ export default function WeddingMap({
                             setSelectedTable(null)
                           }}
                         >
-                          Check In
+                          {tCheckin('checkIn')}
                         </Button>
                       )
                     }
@@ -1069,7 +1080,7 @@ export default function WeddingMap({
 
                   {selectedTable.checkins.length > 0 && (
                     <p className="text-xs text-gray-500 italic text-center">
-                      Click on meeples to see messages
+                      {tMap('clickToCheckIn')}
                     </p>
                   )}
                 </div>
@@ -1105,12 +1116,12 @@ export default function WeddingMap({
                   <Textarea
                     value={editedMessage}
                     onChange={(e) => setEditedMessage(e.target.value)}
-                    placeholder="Enter your message..."
+                    placeholder={tEditMessage('placeholder')}
                     maxLength={280}
                     rows={3}
                     className="text-sm resize-none"
                   />
-                  <p className="text-xs text-gray-500">{editedMessage.length}/280 characters</p>
+                  <p className="text-xs text-gray-500">{tEditMessage('characterCount', { count: editedMessage.length })}</p>
                   <div className="flex gap-2">
                     <Button
                       size="sm"
@@ -1118,7 +1129,7 @@ export default function WeddingMap({
                       disabled={isSavingMessage}
                       className="flex-1"
                     >
-                      {isSavingMessage ? 'Saving...' : 'Save'}
+                      {isSavingMessage ? tCommon('saving') : tCommon('save')}
                     </Button>
                     <Button
                       size="sm"
@@ -1130,7 +1141,7 @@ export default function WeddingMap({
                       disabled={isSavingMessage}
                       className="flex-1"
                     >
-                      Cancel
+                      {tCommon('cancel')}
                     </Button>
                   </div>
                 </div>
@@ -1149,7 +1160,7 @@ export default function WeddingMap({
                       }}
                       className="w-full mt-2"
                     >
-                      Edit Message
+                      {tCommon('edit')}
                     </Button>
                   )}
                 </>

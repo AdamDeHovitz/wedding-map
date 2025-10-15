@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { Meeple, MEEPLE_COLORS, type MeepleStyle } from '@/components/Meeple'
+import { useTranslations } from 'next-intl'
 
 interface MeepleCustomizerProps {
   currentColor: string
@@ -13,6 +14,8 @@ interface MeepleCustomizerProps {
 export default function MeepleCustomizer({
   currentColor,
 }: MeepleCustomizerProps) {
+  const t = useTranslations('settings')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const [selectedColor, setSelectedColor] = useState(currentColor)
   const selectedStyle: MeepleStyle = '3d' // Always use 3D style
@@ -36,12 +39,12 @@ export default function MeepleCustomizer({
 
       if (!response.ok) {
         const error = await response.json()
-        setSaveMessage(error.error || 'Failed to save meeple preferences. Please try again.')
+        setSaveMessage(error.error || t('colorFailed'))
         setIsSaving(false)
         return
       }
 
-      setSaveMessage('Meeple preferences saved successfully!')
+      setSaveMessage(t('colorSaved'))
       setIsSaving(false)
 
       // Refresh the page to show updated meeple everywhere
@@ -49,7 +52,7 @@ export default function MeepleCustomizer({
         router.refresh()
       }, 1000)
     } catch {
-      setSaveMessage('Something went wrong. Please try again.')
+      setSaveMessage(t('colorFailed'))
       setIsSaving(false)
     }
   }
@@ -68,7 +71,7 @@ export default function MeepleCustomizer({
       {/* Color Selector */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Choose Your Meeple Color
+          {t('meepleColor')}
         </label>
         <div className="grid grid-cols-3 gap-3">
           {MEEPLE_COLORS.map((colorOption) => (
@@ -97,7 +100,7 @@ export default function MeepleCustomizer({
           disabled={isSaving || selectedColor === currentColor}
           className="flex-1"
         >
-          {isSaving ? 'Saving...' : 'Save Meeple Color'}
+          {isSaving ? tCommon('saving') : t('saveColor')}
         </Button>
       </div>
 
@@ -114,8 +117,8 @@ export default function MeepleCustomizer({
       )}
 
       <div className="text-xs text-gray-500 space-y-1">
-        <p>💡 Choose a color and style that represents you!</p>
-        <p>✨ Your meeple will update across all your past and future check-ins.</p>
+        <p>{t('colorTip')}</p>
+        <p>{t('colorUpdate')}</p>
       </div>
     </div>
   )

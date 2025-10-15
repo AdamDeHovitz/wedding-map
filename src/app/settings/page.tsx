@@ -7,9 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { MeepleStyle } from '@/components/Meeple'
+import { getTranslations } from 'next-intl/server'
 
 export default async function SettingsPage() {
   const session = await auth()
+  const t = await getTranslations('settings')
+  const tCommon = await getTranslations('common')
 
   if (!session?.user) {
     redirect('/api/auth/signin')
@@ -27,28 +30,28 @@ export default async function SettingsPage() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-4 sm:mb-6">
           <Link href="/">
-            <Button variant="outline" className="min-h-[44px]">← Back to Map</Button>
+            <Button variant="outline" className="min-h-[44px]">← {tCommon('backToMap')}</Button>
           </Link>
         </div>
 
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600">Customize your profile and meeple</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Your details from Google account</CardDescription>
+              <CardTitle>{t('profileInfo')}</CardTitle>
+              <CardDescription>{t('profileInfoDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Name</label>
+                <label className="text-sm font-medium text-gray-700">{t('name')}</label>
                 <p className="text-gray-900">{session.user.name}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Email</label>
+                <label className="text-sm font-medium text-gray-700">{t('email')}</label>
                 <p className="text-gray-900">{session.user.email}</p>
               </div>
             </CardContent>
@@ -56,9 +59,9 @@ export default async function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Language / Jazyk</CardTitle>
+              <CardTitle>{t('languageTitle')}</CardTitle>
               <CardDescription>
-                Choose your preferred language / Vyberte preferovaný jazyk
+                {t('languageDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -70,9 +73,9 @@ export default async function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Meeple Customization</CardTitle>
+              <CardTitle>{t('meepleCustomization')}</CardTitle>
               <CardDescription>
-                Choose your meeple color and style. This will update across all your check-ins.
+                {t('meepleCustomizationDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
