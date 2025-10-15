@@ -11,6 +11,7 @@ interface LanguageSelectorProps {
 
 export default function LanguageSelector({ currentLanguage = 'en' }: LanguageSelectorProps) {
   const t = useTranslations('settings')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'cs'>(currentLanguage)
   const [isSaving, setIsSaving] = useState(false)
@@ -90,7 +91,7 @@ export default function LanguageSelector({ currentLanguage = 'en' }: LanguageSel
           disabled={isSaving}
           className="w-full bg-[#7B2D26] hover:bg-[#6B1D16] text-[#F5E6D3]"
         >
-          {isSaving ? t('saving') : t('save')}
+          {isSaving ? tCommon('saving') : tCommon('save')}
         </Button>
       )}
 
