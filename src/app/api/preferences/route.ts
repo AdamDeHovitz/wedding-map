@@ -22,15 +22,23 @@ export async function PATCH(request: Request) {
     const body = await request.json()
     const { meepleColor, meepleStyle, preferredLanguage } = body
 
-    // Build update object - only include fields that are provided
+    // Fetch existing preferences
+    const { data: existingPrefs } = await supabase
+      .from('user_preferences')
+      .select('*')
+      .eq('email', session.user.email)
+      .single()
+
+    // Build update object - merge with existing data
     const updateData: {
       email: string
-      meeple_color?: string
+      meeple_color: string
       meeple_style?: string
       preferred_language?: 'en' | 'cs'
       updated_at: string
     } = {
       email: session.user.email,
+      meeple_color: existingPrefs?.meeple_color || '#7B2D26', // Use existing or default
       updated_at: new Date().toISOString(),
     }
 
@@ -47,13 +55,16 @@ export async function PATCH(request: Request) {
 
     // Validate and add meeple style if provided
     if (meepleStyle !== undefined) {
-      if (!['3d', 'flat', 'bride', 'groom'].includes(meepleStyle)) {
+      if (!['3d', 'bride', 'groom'].includes(meepleStyle)) {
         return NextResponse.json(
           { error: 'Invalid meeple style' },
           { status: 400 }
         )
       }
       updateData.meeple_style = meepleStyle
+    } else if (existingPrefs?.meeple_style) {
+      // Preserve existing style
+      updateData.meeple_style = existingPrefs.meeple_style
     }
 
     // Validate and add language preference if provided
@@ -65,6 +76,9 @@ export async function PATCH(request: Request) {
         )
       }
       updateData.preferred_language = preferredLanguage
+    } else if (existingPrefs?.preferred_language) {
+      // Preserve existing language
+      updateData.preferred_language = existingPrefs.preferred_language
     }
 
     // Update user preferences
