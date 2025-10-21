@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SeatingChart } from '@/components/SeatingChart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { WelcomeModal } from '@/components/WelcomeModal'
 import { useTranslations, useLocale } from 'next-intl'
 
 interface WeddingMapProps {
@@ -1205,6 +1206,8 @@ export default function WeddingMap({
           </div>
         </div>
       )}
+
+      <WelcomeModal />
     </div>
   )
 }

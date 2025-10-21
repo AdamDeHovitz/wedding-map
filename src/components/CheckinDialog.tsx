@@ -30,14 +30,14 @@ interface CheckinDialogProps {
   }) => void
 }
 
-export function CheckinDialog({ open, onOpenChange, table, requireCode = true, onCheckinSuccess }: CheckinDialogProps) {
+export function CheckinDialog({ open, onOpenChange, table, requireCode = false, onCheckinSuccess }: CheckinDialogProps) {
   const { data: session, status } = useSession()
   const tAuth = useTranslations('auth')
   const tCheckin = useTranslations('checkin')
   const tCommon = useTranslations('common')
   const locale = useLocale()
 
-  const [step, setStep] = useState<'code' | 'message'>(requireCode ? 'code' : 'message')
+  const [step, setStep] = useState<'code' | 'message'>('message')
   const [code, setCode] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -121,7 +121,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       // Reset state
       setMessage('')
       setCode('')
-      setStep(requireCode ? 'code' : 'message')
+      setStep('message')
       setIsRetrying(false)
     } catch (err) {
       if (err instanceof Error) {
@@ -208,7 +208,7 @@ export function CheckinDialog({ open, onOpenChange, table, requireCode = true, o
       setUsername('')
       setFullName('')
       setUsernameError('')
-      setStep(requireCode ? 'code' : 'message')
+      setStep('message')
     }
     onOpenChange(newOpen)
   }
