@@ -20,7 +20,6 @@ interface CheckinDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   table: WeddingTable | null
-  requireCode?: boolean // If false, skip code verification (for QR code flow)
   onCheckinSuccess?: (data: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     checkin: any
@@ -30,7 +29,7 @@ interface CheckinDialogProps {
   }) => void
 }
 
-export function CheckinDialog({ open, onOpenChange, table, requireCode = false, onCheckinSuccess }: CheckinDialogProps) {
+export function CheckinDialog({ open, onOpenChange, table, onCheckinSuccess }: CheckinDialogProps) {
   const { data: session, status } = useSession()
   const tAuth = useTranslations('auth')
   const tCheckin = useTranslations('checkin')

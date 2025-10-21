@@ -35,7 +35,7 @@ export function WelcomeModal() {
           <DialogDescription className="text-center pt-4 text-base">
             <div className="space-y-4">
               <p className="text-[#5a4a42]">
-                We're so grateful you were part of our special day. This map is now open for everyone to explore and leave messages at any location.
+                We&rsquo;re so grateful you were part of our special day. This map is now open for everyone to explore and leave messages at any location.
               </p>
               <p className="text-[#5a4a42]">
                 Feel free to revisit your favorite spots and share your memories with us!

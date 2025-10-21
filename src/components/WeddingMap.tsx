@@ -1175,7 +1175,6 @@ export default function WeddingMap({
         open={checkinDialogOpen}
         onOpenChange={handleCheckinDialogChange}
         table={checkinTable}
-        requireCode={!initialTable || checkinTable?.id !== initialTable?.id}
         onCheckinSuccess={handleCheckinSuccess}
       />
 
