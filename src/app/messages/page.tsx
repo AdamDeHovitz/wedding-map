@@ -8,7 +8,8 @@ import { getTranslations } from 'next-intl/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { db: { schema: 'wedding_map' } }
 )
 
 export default async function MessagesPage() {

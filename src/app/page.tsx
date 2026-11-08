@@ -9,7 +9,8 @@ import { getTranslations } from 'next-intl/server'
 // Use service role key to bypass RLS for reading all data
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { db: { schema: 'wedding_map' } }
 )
 
 interface HomeProps {
